@@ -3,150 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Tampa App</title>
+    <title>Tampa E-Arena</title>
+    <!-- Tailwind CSS for Premium Dark UI -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Anti-Plagiarism & Security Controls */
         body {
             user-select: none;
             -webkit-user-select: none;
-            background-color: #FFFFFF;
-            color: #333333;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f8fafc;
         }
-        .container {
-            width: 90%;
-            max-width: 400px;
-            padding: 20px;
-            background: #F8F9FA;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            text-align: center;
+        .glow-btn {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+            transition: all 0.3s ease;
         }
-        h2 { color: #1E3A8A; margin-bottom: 20px; }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #CCCCCC;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
+        .glow-btn:hover {
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.8);
+            transform: translateY(-2px);
         }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #1E3A8A;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover { background-color: #152A66; }
-        .tabs { display: flex; justify-content: space-around; margin-top: 20px; background: #EEE; border-radius: 8px; padding: 5px; }
-        .tab { padding: 8px 12px; cursor: pointer; border-radius: 6px; font-size: 14px; }
-        .tab.active { background: #1E3A8A; color: white; }
-        .app-content { display: none; margin-top: 20px; }
     </style>
 </head>
-<body oncontextmenu="return false;" oncopy="return false;" onpaste="return false;">
+<body oncontextmenu="return false;" oncopy="return false;" onpaste="return false;" class="min-h-screen flex flex-col items-center justify-between font-sans selection:bg-indigo-500">
 
-    <!-- Auth Terminal Container -->
-    <div class="container" id="authContainer">
-        <h2>Tampa E-Arena Login</h2>
-        <p>Enter nickname or Admin bypass token</p>
-        <input type="text" id="userInput" placeholder="Nickname / Phone Number">
-        <button onclick="handleLogin()">Connect Terminal</button>
+    <!-- Auth Terminal Section -->
+    <div id="authContainer" class="w-full max-w-md p-6 my-auto bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-3xl shadow-2xl text-center mx-4">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-600/20 text-indigo-400 rounded-2xl mb-4 border border-indigo-500/30 text-2xl">
+            <i class="fa-solid fa-gamepad"></i>
+        </div>
+        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">TAMPA E-ARENA</h2>
+        <p class="text-slate-400 mt-2 text-sm">Enter your profile credential to access the live dashboard pool</p>
+        
+        <div class="mt-6 text-left">
+            <label class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Access Token / Nickname</label>
+            <input type="text" id="userInput" placeholder="e.g., Player1 or Admin Bypass ID" class="w-full px-4 py-3 bg-slate-950/60 border border-slate-800 rounded-xl focus:border-indigo-500 focus:outline-none text-slate-200 placeholder:text-slate-600 font-medium">
+        </div>
+        
+        <button onclick="handleLogin()" class="w-full mt-6 py-3 bg-indigo-600 text-white font-bold rounded-xl glow-btn transition-all duration-200">
+            Connect Secure Terminal
+        </button>
     </div>
 
-    <!-- Main Platform Hub (Hidden initially) -->
-    <div class="container" id="mainHub" style="display: none;">
-        <h2 id="hubTitle">Tampa Web App Hub</h2>
-        
-        <div class="tabs">
-            <div class="tab active" id="tab1" onclick="switchTab(1)">Games</div>
-            <div class="tab" id="tab2" onclick="switchTab(2)">Wallet</div>
-            <div class="tab" id="tab3" onclick="switchTab(3)">Referral</div>
-            <div class="tab" id="tab4" onclick="switchTab(4)">Ledger</div>
-        </div>
-
-        <!-- Tab 1: Games Arena Container -->
-        <div id="content1" class="app-content" style="display: block;">
-            <h3>Games Arena</h3>
-            <p style="color: gray;">Real-time continuous state loops active.</p>
-            <div style="border: 1px dashed #1E3A8A; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-                <strong>Game 1: Big vs Small</strong><br>Indefinite 25-Second pool active.
+    <!-- Main Live Gaming Hub -->
+    <div id="mainHub" class="w-full max-w-md bg-slate-950 min-h-screen flex flex-col justify-between hidden shadow-2xl border-x border-slate-900">
+        <!-- Top Status Navbar -->
+        <div class="p-4 bg-slate-900/50 border-b border-slate-900 backdrop-blur-md sticky top-0 z-50 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white shadow-md shadow-indigo-500/20" id="userAvatar">P</div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-200 leading-tight" id="hubTitle">Terminal Loading...</h4>
+                    <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Live Stream Loop</span>
+                </div>
             </div>
-            <div style="border: 1px dashed #1E3A8A; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-                <strong>Game 2: Matka King</strong><br>Continuous 30-Second clock running.
-            </div>
-            <div style="border: 1px dashed #1E3A8A; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-                <strong>Game 3: Tap Box & Balloons Bomb</strong><br>Automated anti-drain loops initialized.
+            <div class="bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-coins text-amber-400 text-sm"></i>
+                <span class="text-sm font-black text-amber-200 tracking-wide" id="walletDisplay">100.00</span>
             </div>
         </div>
 
-        <!-- Tab 2: Secure Multi-Language Wallet Hub -->
-        <div id="content2" class="app-content">
-            <h3>Secure Wallet Hub</h3>
-            <p>Persistent rotating manual balance engine.</p>
-            <button style="background: #28A745;">Refresh Wallet Balance</button>
+        <!-- Scrollable Platform Dynamic Body -->
+        <div class="p-4 flex-1 overflow-y-auto space-y-5 pb-24">
+            
+            <!-- Tab 1: Games Arena Container -->
+            <div id="content1" class="app-content space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-black text-slate-200 tracking-wide uppercase">Active Battle Grounds</h3>
+                    <span class="text-xs bg-slate-900 text-indigo-400 px-2 py-1 rounded-md font-mono border border-slate-800">100% Real Players</span>
+                </div>
+                
+                <!-- Game Card 1: Typing Duel -->
+                <div class="bg-gradient-to-r from-slate-900 to-indigo-950/40 p-4 rounded-2xl border border-slate-800/80 relative overflow-hidden group">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Game 1: Speed Typing</span>
+                            <h4 class="text-lg font-bold text-slate-100 mt-1">Break Mind 1v1</h4>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-500 font-medium block">Live Room Timer</span>
+                            <span class="text-sm font-mono font-bold text-indigo-400" id="timer1">25s</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">Defeat opponents in real-time fast typing contests. Fast fingers win.</p>
+                    <div class="mt-4 flex items-center justify-between pt-3 border-t border-slate-900">
+                        <span class="text-xs text-slate-500">Entry Pool: <strong class="text-slate-300">10 Tokens</strong></span>
+                        <button onclick="startGame('Break Mind 1v1')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/10">Launch Room</button>
+                    </div>
+                </div>
+
+                <!-- Game Card 2: Matka King Clock -->
+                <div class="bg-gradient-to-r from-slate-900 to-purple-950/40 p-4 rounded-2xl border border-slate-800/80 relative overflow-hidden group">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Game 2: continuous Matrix</span>
+                            <h4 class="text-lg font-bold text-slate-100 mt-1">Matka King Loop</h4>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-500 font-medium block">Loop Cycle</span>
+                            <span class="text-sm font-mono font-bold text-purple-400" id="timer2">30s</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">Predict system outcome logic matrix numbers securely every 30 seconds.</p>
+                    <div class="mt-4 flex items-center justify-between pt-3 border-t border-slate-900">
+                        <span class="text-xs text-slate-500">Multiplier: <strong class="text-emerald-400">2.00x Luck</strong></span>
+                        <button onclick="startGame('Matka King Loop')" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-purple-600/10">Enter State</button>
+                    </div>
+                </div>
+
+                <!-- Game Card 3: Balloon Bomb Booster -->
+                <div class="bg-gradient-to-r from-slate-900 to-pink-950/40 p-4 rounded-2xl border border-slate-800/80 relative overflow-hidden group">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Game 3: Tap Elimination</span>
+                            <h4 class="text-lg font-bold text-slate-100 mt-1">Balloons Bomb (A vs B)</h4>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-500 font-medium block">Status</span>
+                            <span class="text-xs font-bold text-emerald-400 uppercase bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md animate-pulse">Ready</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">Pop competing team balloons dynamically without triggering the anti-drain loops.</p>
+                    <div class="mt-4 flex items-center justify-between pt-3 border-t border-slate-900">
+                        <span class="text-xs text-slate-500">Safety Check: <strong class="text-slate-300">Automated</strong></span>
+                        <button onclick="startGame('Balloons Bomb')" class="bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-pink-600/10">Join Arena</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Secure Wallet Panel -->
+            <div id="content2" class="app-content hidden space-y-4">
+                <h3 class="text-lg font-black text-slate-200 tracking-wide uppercase">Secure Ledger Wallet</h3>
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-center">
+                    <span class="text-xs text-slate-400 block uppercase tracking-wider">Available Balance Token</span>
+                    <h2 class="text-4xl font-black text-amber-400 mt-1 tracking-wide" id="walletMainBalance">100.00</h2>
+                    <p class="text-[10px] text-slate-500 mt-2">Rotating key authentication validation engine securely mapped</p>
+                    <button onclick="refreshBalance()" class="mt-4 w-full py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-200 text-sm font-bold rounded-xl border border-slate-700/60 flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-rotate-right" id="refreshIcon"></i> Refresh Balance Engine</button>
+                </div>
+            </div>
+
+            <!-- Tab 3: Referral Management -->
+            <div id="content3" class="app-content hidden space-y-4">
+                <h3 class="text-lg font-black text-slate-200 tracking-wide uppercase">Referral Distribution Panel</h3>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                    <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-850">
+                        <div>
+                            <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider block">Your Invite Link Code</span>
+                            <span class="text-base font-mono font-bold text-indigo-400 tracking-widest uppercase">TMPX99</span>
+                        </div>
+                        <button onclick="alert('Referral copied!')" class="p-2 bg-indigo-600 text-white rounded-lg text-sm"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-3 leading-relaxed">Tracks historical <strong class="text-emerald-400">1% recurring stake volume commission</strong> instantly credited directly into your node wallet from referee match entries.</p>
+                </div>
+            </div>
+
+            <!-- Tab 4: Financial Ledger -->
+            <div id="content4" class="app-content hidden space-y-4">
+                <h3 class="text-lg font-black text-slate-200 tracking-wide uppercase">Isolation Pool Audit</h3>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
+                    <div class="flex justify-between items-center bg-slate-950 p-3 rounded-xl border border-slate-850">
+                        <span class="text-xs font-bold text-slate-300">5-Hour Locking Loop</span>
+                        <span class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded font-mono font-bold">ACTIVE</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Once an active withdrawal request payout is initiated, system rules completely bar game tokens to prevent concurrency drain conflicts until validations conclude.</p>
+                </div>
+            </div>
+
+            <!-- Super Admin Power Intercept Module -->
+            <div id="adminModule" class="hidden border-t-2 border-dashed border-rose-500/40 pt-5 space-y-4">
+                <div class="flex items-center gap-2 text-rose-400">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                    <h3 class="text-lg font-black uppercase tracking-wide">Super Admin Master Panel</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-rose-950/20 border border-rose-900/40 p-3 rounded-xl text-center">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Live Platform Users</span>
+                        <span class="text-xl font-mono font-black text-rose-400">200 Members</span>
+                    </div>
+                    <div class="bg-rose-950/20 border border-rose-900/40 p-3 rounded-xl text-center">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Net System Profit</span>
+                        <span class="text-xl font-mono font-black text-emerald-400">+48.2%</span>
+                    </div>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl">
+                    <span class="text-xs font-bold text-slate-300 block mb-2">UID Target Query Engine</span>
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="Search user ID string..." class="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200">
+                        <button onclick="alert('Scanning UID database records...')" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">Scan</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Tab 3: Referral Management Terminal -->
-        <div id="content3" class="app-content">
-            <h3>Referral Terminal</h3>
-            <p>Your 4-digit alphanumeric referral code active.</p>
-            <p>Tracks historical 1% recurring stake volume commission.</p>
+        <!-- Sticky Bottom Navigation Core Bar -->
+        <div class="bg-slate-900/90 border-t border-slate-900 p-2 backdrop-blur-md fixed bottom-0 max-w-md w-full z-50 flex justify-around">
+            <button id="nav1" onclick="switchTab(1)" class="flex flex-col items-center gap-1 text-indigo-400 transition-all py-1 px-3 rounded-xl"><i class="fa-solid fa-gamepad text-lg"></i><span class="text-[10px] font-bold">Arena</span></button>
+            <button id="nav2" onclick="switchTab(2)" class="flex flex-col items-center gap-1 text-slate-500 transition-all py-1 px-3 rounded-xl"><i class="fa-solid fa-wallet text-lg"></i><span class="text-[10px] font-bold">Wallet</span></button>
+            <button id="nav3" onclick="switchTab(3)" class="flex flex-col items-center gap-1 text-slate-500 transition-all py-1 px-3 rounded-xl"><i class="fa-solid fa-users-rectangle text-lg"></i><span class="text-[10px] font-bold">Referral</span></button>
+            <button id="nav4" onclick="switchTab(4)" class="flex flex-col items-center gap-1 text-slate-500 transition-all py-1 px-3 rounded-xl"><i class="fa-solid fa-receipt text-lg"></i><span class="text-[10px] font-bold">Ledger</span></button>
         </div>
+    </div>
 
-        <!-- Tab 4: Financial Ledger Counter -->
-        <div id="content4" class="app-content">
-            <h3>Financial Ledger</h3>
-            <p>Withdrawal Isolation Pool: 5-Hour Locked Rule active.</p>
-        </div>
-
-        <!-- Super Admin Intercept Module (Visible only to master ID) -->
-        <div id="adminModule" style="display: none; margin-top: 20px; border-top: 2px solid #DC3545; padding-top: 15px;">
-            <h3 style="color: #DC3545;">🛡️ Super Admin Master Power Panel</h3>
-            <p>Real-Time Analytics, UID Search Directory, and Payout Approvals active.</p>
+    <!-- Active Game Execution Room Modal Overlay -->
+    <div id="gameModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center hidden p-6">
+        <div class="w-full max-w-sm text-center space-y-6">
+            <div class="animate-spin inline-block w-14 h-14 border-4 border-indigo-500 border-t-transparent rounded-full text-indigo-500" role="status"></div>
+            <div>
+                <h2 class="text-2xl font-black tracking-wide text-slate-100" id="activeGameTitle">Game Loading</h2>
+                <p class="text-sm text-slate-400 mt-2">Establishing full-stack real player match vectors. If no user is found, the system will automatically trigger a 100% entry fee refund policy.</p>
+            </div>
+            <button onclick="closeGame()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold rounded-xl transition-all">Cancel Match & Return</button>
         </div>
     </div>
 
     <script>
+        // Real-time asynchronous state loops for Clocks
+        let time1 = 25;
+        let time2 = 30;
+        
+        setInterval(() => {
+            time1 = time1 <= 1 ? 25 : time1 - 1;
+            document.getElementById('timer1').innerText = time1 + "s";
+            
+            time2 = time2 <= 1 ? 30 : time2 - 1;
+            document.getElementById('timer2').innerText = time2 + "s";
+        }, 1000);
+
         function handleLogin() {
             const inputVal = document.getElementById('userInput').value.trim();
-            if(!inputVal) { alert('Please enter validation credentials.'); return; }
+            if(!inputVal) { alert('Please enter profile access credentials.'); return; }
 
-            document.getElementById('authContainer').style.display = 'none';
-            document.getElementById('mainHub').style.display = 'block';
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('mainHub').classList.remove('hidden');
+            
+            const firstLetter = inputVal.charAt(0).toUpperCase();
+            document.getElementById('userAvatar').innerText = firstLetter;
 
-            // Master Phone Access Intercept Logic Check
+            // Master Phone access index override intercept logic check
             if(inputVal === "8709913752") {
-                document.getElementById('hubTitle').innerText = "👑 Master Admin Hub";
-                document.getElementById('adminModule').style.display = 'block';
-                alert('Super Admin Master Intercept Verified. Full System Bypass Enabled.');
+                document.getElementById('hubTitle').innerHTML = '👑 Master Admin Hub';
+                document.getElementById('adminModule').classList.remove('hidden');
+                alert('Super Admin Terminal Identity Verified. Real-time controls active.');
             } else {
-                document.getElementById('hubTitle').innerText = "Player Hub: " + inputVal;
+                document.getElementById('hubTitle').innerText = 'Player: ' + inputVal;
+                document.getElementById('adminModule').classList.add('hidden');
             }
         }
 
         function switchTab(tabNum) {
             for(let i=1; i<=4; i++) {
-                document.getElementById('content' + i).style.display = 'none';
-                document.getElementById('tab' + i).classList.remove('active');
+                document.getElementById('content' + i).classList.add('hidden');
+                const navBtn = document.getElementById('nav' + i);
+                navBtn.classList.remove('text-indigo-400');
+                navBtn.classList.add('text-slate-500');
             }
-            document.getElementById('content' + tabNum).style.display = 'block';
-            document.getElementById('tab' + tabNum).classList.add('active');
+            document.getElementById('content' + tabNum).classList.remove('hidden');
+            const activeNav = document.getElementById('nav' + tabNum);
+            activeNav.classList.remove('text-slate-500');
+            activeNav.classList.add('text-indigo-400');
+        }
+
+        function startGame(gameName) {
+            document.getElementById('activeGameTitle').innerText = "Connecting: " + gameName;
+            document.getElementById('gameModal').classList.remove('hidden');
+        }
+
+        function closeGame() {
+            document.getElementById('gameModal').classList.add('hidden');
+        }
+
+        function refreshBalance() {
+            const icon = document.getElementById('refreshIcon');
+            icon.classList.add('animate-spin');
+            setTimeout(() => {
+                icon.classList.remove('animate-spin');
+                alert('Wallet balance nodes successfully synchronized across continuous chains.');
+            }, 1200);
         }
     </script>
 </body>
-</html>
+    </html>
