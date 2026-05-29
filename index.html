@@ -5,38 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Tampa E-Arena</title>
     
+    <!-- PWA Manifest & Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlRhbXBhIEUtQXJlbmEiLAogICJzaG9ydF9uYW1lIjogIlRhbXBhIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNGRkZGRkYiLAogICJ0aGVtZV9jb2xvciI6ICIjMUUzQThBIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsaXRpY29uLmNvbS81MTIvYzgvYzg1NDUucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXQp9">
 
+    <!-- CSS/Tailwind and FontAwesome Icons -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        // Official Firebase Production Credentials
-        const firebaseConfig = {
-            apiKey: "AIzaSyALq0NOUj6diw8GUWa0Zd541scVStbYAo8",
-            authDomain: "tampa-67659.firebaseapp.com",
-            databaseURL: "https://tampa-67659-default-rtdb.firebaseio.com",
-            projectId: "tampa-67659",
-            storageBucket: "tampa-67659.firebasestorage.app",
-            messagingSenderId: "41323066065",
-            appId: "1:41323066065:web:e8f50e4a85db3756684bf0"
-        };
-
-        // Initialize App & Services Global Bindings
-        const app = initializeApp(firebaseConfig);
-        window.auth = getAuth(app);
-        window.db = getDatabase(app);
-        window.dbRefs = { ref, set, get, update, onValue };
-    </script>
-
     <style>
-        /* 1. Rigid Security Controls & Anti-Plagiarism */
+        /* Security Controls & Anti-Plagiarism */
         body {
             user-select: none !important;
             -webkit-user-select: none !important;
@@ -49,7 +28,6 @@
             user-select: text !important;
             -webkit-user-select: text !important;
         }
-        /* Custom Clean Layout Components */
         .card-surface {
             background-color: #F8F9FA;
             border: 1px solid #E2E8F0;
@@ -58,23 +36,27 @@
         .bg-corporate { background-color: #1E3A8A; }
         .border-corporate { border-color: #1E3A8A; }
         
-        /* RTL Custom utilities */
         [dir="rtl"] .text-left-rtl { text-align: right; }
         [dir="rtl"] .flex-row-rtl { flex-direction: row-reverse; }
     </style>
 </head>
 <body oncontextmenu="return false;" oncopy="return false;" onpaste="return false;" class="min-h-screen flex flex-col items-center justify-start bg-white antialiased selection:bg-none">
 
+    <!-- Screen Debugger Console for Real-time Errors -->
+    <div id="screenConsole" class="w-full max-w-md bg-red-50 text-red-800 text-[10px] p-2 hidden font-mono border-b border-red-200"></div>
+
+    <!-- PWA Installation Banner -->
     <div id="pwaBanner" class="w-full max-w-md bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center justify-between hidden sticky top-0 z-[100]">
         <div class="flex items-center gap-2">
             <i class="fa-solid fa-mobile-screen-button text-amber-700 text-base"></i>
             <span class="text-xs font-bold text-amber-900">Install Tampa App to Home Screen</span>
         </div>
-        <button onclick="triggerPWAInstallation()" class="bg-corporate text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-sm">INSTALL</button>
+        <button onclick="window.triggerPWAInstallation()" class="bg-corporate text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-sm">INSTALL</button>
     </div>
 
     <div id="appContainer" class="w-full max-w-md min-h-screen flex flex-col justify-between bg-white border-x border-slate-200 relative shadow-md">
         
+        <!-- ==================== SCREEN 1: LOGIN TERMINAL ==================== -->
         <div id="loginScreen" class="flex-1 flex flex-col items-center justify-center p-6 space-y-6">
             <div class="w-16 h-16 bg-blue-50 text-corporate rounded-2xl flex items-center justify-center text-3xl border border-blue-100 shadow-sm">
                 <i class="fa-solid fa-shield-halved"></i>
@@ -93,14 +75,16 @@
                     <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">Referral Code (Optional - 4 Digits)</label>
                     <input type="text" id="refInput" maxLength="4" placeholder="e.g., 1234" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-sm focus:outline-none focus:border-blue-800">
                 </div>
-                <button onclick="executeAuthenticationPipeline()" class="w-full py-3.5 bg-corporate hover:bg-blue-900 text-white font-black rounded-xl text-sm transition-all shadow-md">
+                <button onclick="window.executeAuthenticationPipeline()" class="w-full py-3.5 bg-corporate hover:bg-blue-900 text-white font-black rounded-xl text-sm transition-all shadow-md">
                     INITIALIZE SECURE ACCESS
                 </button>
             </div>
         </div>
 
+        <!-- ==================== APP HUB OVERLAY CONTAINER ==================== -->
         <div id="mainHubScreen" class="flex-1 flex flex-col hidden">
             
+            <!-- GLOBAL APP HEADER NAVBAR -->
             <div class="p-4 bg-white border-b border-slate-100 flex items-center justify-between sticky top-0 z-40">
                 <div class="flex items-center gap-2">
                     <div id="avatarBox" class="w-9 h-9 bg-corporate text-white font-black rounded-xl flex items-center justify-center text-sm shadow-sm">U</div>
@@ -116,14 +100,17 @@
                 </div>
             </div>
 
+            <!-- SCROLLABLE PANELS -->
             <div id="panelScrollArea" class="p-4 flex-1 overflow-y-auto space-y-6 pb-24 text-left-rtl">
                 
+                <!-- TAB 1: GAMES ARENA -->
                 <div id="tabPanel1" class="tab-panel space-y-4">
                     <div class="flex justify-between items-center flex-row-rtl">
                         <h3 class="text-xs font-black uppercase tracking-wider text-slate-400"><i class="fa-solid fa-gamepad mr-1"></i> Continuous Game Pools</h3>
                         <span class="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">Anti-Drain Active</span>
                     </div>
 
+                    <!-- GAME 1: BIG VS SMALL -->
                     <div class="card-surface p-4 rounded-2xl space-y-3 relative">
                         <div class="flex justify-between items-start flex-row-rtl">
                             <div>
@@ -136,16 +123,17 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 bg-white p-2 rounded-xl border border-slate-100 font-mono text-xs">
-                            <div class="text-center p-1 bg-slate-50 rounded">Big Pool: <span id="poolBig" class="font-bold">0</span></div>
-                            <div class="text-center p-1 bg-slate-50 rounded">Small Pool: <span id="poolSmall" class="font-bold">0</span></div>
+                            <div class="text-center p-1 bg-slate-50 rounded">Big: <span id="poolBig" class="font-bold">0</span></div>
+                            <div class="text-center p-1 bg-slate-50 rounded">Small: <span id="poolSmall" class="font-bold">0</span></div>
                         </div>
                         <div class="flex gap-2 items-center flex-row-rtl">
-                            <input type="number" id="stakeBigSmall" placeholder="Tokens Entry Volume" class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
-                            <button onclick="placeStake('BigSmall', 'Big')" class="bg-corporate text-white text-xs font-bold px-3 py-2 rounded-xl">Stk Big</button>
-                            <button onclick="placeStake('BigSmall', 'Small')" class="bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl">Stk Small</button>
+                            <input type="number" id="stakeBigSmall" placeholder="Tokens Entry" class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
+                            <button onclick="window.placeStake('BigSmall', 'Big')" class="bg-corporate text-white text-xs font-bold px-3 py-2 rounded-xl">Stk Big</button>
+                            <button onclick="window.placeStake('BigSmall', 'Small')" class="bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl">Stk Small</button>
                         </div>
                     </div>
 
+                    <!-- GAME 2: MATKA KING -->
                     <div class="card-surface p-4 rounded-2xl space-y-3 relative">
                         <div class="flex justify-between items-start flex-row-rtl">
                             <div>
@@ -170,11 +158,12 @@
                         </div>
                         <div class="flex gap-2 items-center flex-row-rtl">
                             <input type="number" id="stakeMatka" placeholder="Tokens" class="w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
-                            <button onclick="placeStake('Matka', 'Left')" class="flex-1 bg-purple-800 text-white text-xs font-bold py-2 rounded-xl">Stake Left</button>
-                            <button onclick="placeStake('Matka', 'Right')" class="flex-1 bg-slate-800 text-white text-xs font-bold py-2 rounded-xl">Stake Right</button>
+                            <button onclick="window.placeStake('Matka', 'Left')" class="flex-1 bg-purple-800 text-white text-xs font-bold py-2 rounded-xl">Stake Left</button>
+                            <button onclick="window.placeStake('Matka', 'Right')" class="flex-1 bg-slate-800 text-white text-xs font-bold py-2 rounded-xl">Stake Right</button>
                         </div>
                     </div>
 
+                    <!-- GAME 3: TAP BOX -->
                     <div class="card-surface p-4 rounded-2xl space-y-3 relative">
                         <div class="flex justify-between items-start flex-row-rtl">
                             <div>
@@ -186,15 +175,15 @@
                                 <span id="tapMultiplier" class="text-base font-mono font-black text-rose-700">1.00x</span>
                             </div>
                         </div>
-                        <p class="text-[11px] text-slate-500">24/7 automated risk sequence loop. Pull out your earnings securely before explosive risk capacity triggers execution burst loop!</p>
-                        <div id="tapBoxPoolInfo" class="text-center p-1.5 font-mono text-xs bg-white border border-slate-100 rounded-xl">Live Risk Weight: <span id="tapRiskVal" class="font-bold">0</span> Tokens</div>
+                        <div id="tapBoxPoolInfo" class="text-center p-1.5 font-mono text-xs bg-white border border-slate-100 rounded-xl">Live Risk: <span id="tapRiskVal" class="font-bold">0</span> Tokens</div>
                         <div class="flex gap-2 flex-row-rtl">
                             <input type="number" id="stakeTapBox" placeholder="Entry Amount" class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
-                            <button onclick="enterTapBox()" id="btnTapBox" class="bg-rose-700 text-white text-xs font-black px-4 py-2 rounded-xl shadow-sm">Enter Escalator</button>
-                            <button onclick="pullOutTapBox()" id="btnPullOut" class="bg-emerald-600 text-white text-xs font-black px-4 py-2 rounded-xl shadow-sm hidden">Secure Out</button>
+                            <button onclick="window.enterTapBox()" id="btnTapBox" class="bg-rose-700 text-white text-xs font-black px-4 py-2 rounded-xl shadow-sm">Enter Escalator</button>
+                            <button onclick="window.pullOutTapBox()" id="btnPullOut" class="bg-emerald-600 text-white text-xs font-black px-4 py-2 rounded-xl shadow-sm hidden">Secure Out</button>
                         </div>
                     </div>
 
+                    <!-- GAME 4: BALLOONS BOMB -->
                     <div class="card-surface p-4 rounded-2xl space-y-3 relative">
                         <div class="flex justify-between items-start flex-row-rtl">
                             <div>
@@ -220,11 +209,12 @@
                         </div>
                         <div class="flex gap-2 flex-row-rtl">
                             <input type="number" id="stakeBalloons" placeholder="Tokens" class="w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
-                            <button onclick="placeStake('Balloons', 'A')" class="flex-1 bg-sky-600 text-white text-xs font-black py-2 rounded-xl">Back A</button>
-                            <button onclick="placeStake('Balloons', 'B')" class="flex-1 bg-rose-600 text-white text-xs font-black py-2 rounded-xl">Back B</button>
+                            <button onclick="window.placeStake('Balloons', 'A')" class="flex-1 bg-sky-600 text-white text-xs font-black py-2 rounded-xl">Back A</button>
+                            <button onclick="window.placeStake('Balloons', 'B')" class="flex-1 bg-rose-600 text-white text-xs font-black py-2 rounded-xl">Back B</button>
                         </div>
                     </div>
 
+                    <!-- GAME 5: SPIN TUNNEL -->
                     <div class="card-surface p-4 rounded-2xl space-y-3 relative">
                         <div class="flex justify-between items-start flex-row-rtl">
                             <div>
@@ -240,29 +230,451 @@
                             <div id="wheelGraphic" class="w-12 h-12 rounded-full border-4 border-dashed border-corporate flex items-center justify-center text-xs transition-all duration-1000">⚪</div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-center font-mono text-[10px]">
-                            <div class="p-1 bg-rose-50 text-rose-900 rounded">Red Track: <span id="poolSpinRed">0</span></div>
-                            <div class="p-1 bg-slate-100 text-slate-900 rounded">White Track: <span id="poolSpinWhite">0</span></div>
+                            <div class="p-1 bg-rose-50 text-rose-900 rounded">Red: <span id="poolSpinRed">0</span></div>
+                            <div class="p-1 bg-slate-100 text-slate-900 rounded">White: <span id="poolSpinWhite">0</span></div>
                         </div>
                         <div class="flex gap-2 flex-row-rtl">
                             <input type="number" id="stakeSpin" placeholder="Tokens" class="w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
-                            <button onclick="placeStake('Spin', 'Red')" class="flex-1 bg-rose-600 text-white text-xs font-black py-2 rounded-xl">Back Red</button>
-                            <button onclick="placeStake('Spin', 'White')" class="flex-1 bg-slate-200 text-slate-800 text-xs font-black py-2 rounded-xl border border-slate-300">Back White</button>
+                            <button onclick="window.placeStake('Spin', 'Red')" class="flex-1 bg-rose-600 text-white text-xs font-black py-2 rounded-xl">Back Red</button>
+                            <button onclick="window.placeStake('Spin', 'White')" class="flex-1 bg-slate-200 text-slate-800 text-xs font-black py-2 rounded-xl border border-slate-300">Back White</button>
                         </div>
                     </div>
 
-                    <div class="bg-slate-100/60 p-4 rounded-2xl border border-slate-200/40 text-center py-6">
-                        <i class="fa-solid fa-trophy text-slate-400 text-xl block mb-1"></i>
+                    <div class="bg-slate-100/60 p-4 rounded-2xl text-center py-6">
                         <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest">Tournaments - Coming Soon</h4>
                     </div>
                 </div>
 
+                <!-- TAB 2: WALLET HUB -->
                 <div id="tabPanel2" class="tab-panel space-y-4 hidden">
                     <div class="flex justify-between items-center flex-row-rtl">
                         <h3 class="text-xs font-black uppercase tracking-wider text-slate-400">Secure Node Wallet Hub</h3>
-                        
-                        <select onchange="executeLanguageLayoutToggle(this.value)" class="text-xs bg-slate-50 border border-slate-300 rounded-lg p-1 font-bold">
+                        <select onchange="window.executeLanguageLayoutToggle(this.value)" class="text-xs bg-slate-50 border border-slate-300 rounded-lg p-1 font-bold">
                             <option value="en">English (LTR)</option>
                             <option value="ar">العربية (RTL)</option>
                             <option value="ur">اردو (RTL)</option>
-       
-        
+                        </select>
+                    </div>
+                    <div class="card-surface p-6 rounded-2xl text-center space-y-3">
+                        <span data-lang="wallet_bal" class="text-xs text-slate-400 font-bold block uppercase tracking-wider">Liquid Token Allocation Balance</span>
+                        <h2 id="walletCoreDisplay" class="text-4xl font-black text-corporate font-mono">0.00</h2>
+                        <div class="pt-2 border-t border-slate-200/60 grid grid-cols-2 gap-2 text-[11px] font-mono text-left-rtl">
+                            <div class="bg-white p-2 rounded-xl border border-slate-100">
+                                <span class="text-slate-400 block">Staking Vault</span>
+                                <span class="font-bold text-slate-700">Active Node</span>
+                            </div>
+                            <div class="bg-white p-2 rounded-xl border border-slate-100">
+                                <span data-lang="locked_bal" class="text-slate-400 block">Locked (Pending Audit)</span>
+                                <span id="lockedBalanceDisplay" class="font-bold text-rose-600">0.00</span>
+                            </div>
+                        </div>
+                        <button onclick="window.hardSyncWalletMetrics()" class="w-full mt-2 py-3 bg-corporate text-white text-xs font-black rounded-xl shadow-sm flex items-center justify-center gap-2">
+                            <i id="syncIcon" class="fa-solid fa-rotate"></i> <span data-lang="sync_btn">Refresh Wallet Balance</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 3: REFERRAL -->
+                <div id="tabPanel3" class="tab-panel space-y-4 hidden">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-400">Referral Network Node</h3>
+                    <div class="card-surface p-4 rounded-2xl space-y-3">
+                        <div class="grid grid-cols-2 gap-3 text-center">
+                            <div class="bg-white border border-slate-200/60 p-3 rounded-xl">
+                                <span class="text-[9px] text-slate-400 uppercase font-black block">Unique UID</span>
+                                <span id="terminalUID" class="text-sm font-mono font-black text-slate-800">------</span>
+                            </div>
+                            <div class="bg-white border border-slate-200/60 p-3 rounded-xl">
+                                <span class="text-[9px] text-slate-400 uppercase font-black block">My Referral Code</span>
+                                <span id="terminalRefCode" class="text-sm font-mono font-black text-corporate tracking-widest">----</span>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-slate-200/60 p-3 rounded-xl space-y-1 text-xs">
+                            <span class="text-[9px] text-slate-400 block uppercase font-bold">Last Login Timestamp Log</span>
+                            <div id="loginTimestampLog" class="font-mono font-bold text-slate-700 text-[11px]">----/--/-- --:--:--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: LEDGER -->
+                <div id="tabPanel4" class="tab-panel space-y-4 hidden">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-400">Liquidity Allocation Ledger</h3>
+                    <div class="card-surface p-4 rounded-2xl space-y-3">
+                        <h4 class="text-xs font-black text-corporate uppercase">Deposit Funds Engine</h4>
+                        <div class="space-y-2">
+                            <input type="number" id="depositAmount" placeholder="Amount of Tokens" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
+                            <button onclick="window.executeManualDepositRoute()" class="w-full py-2.5 bg-emerald-700 text-white text-xs font-black rounded-xl">File Deposit Request</button>
+                        </div>
+                    </div>
+                    <div class="card-surface p-4 rounded-2xl space-y-3">
+                        <div class="flex justify-between items-center flex-row-rtl">
+                            <h4 class="text-xs font-black text-rose-900 uppercase">Withdrawal Isolation Module</h4>
+                            <span class="text-[9px] bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded font-mono font-bold">5-Hour Lock Active</span>
+                        </div>
+                        <div class="space-y-2 pt-1">
+                            <input type="number" id="withdrawAmount" placeholder="Tokens Volume" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
+                            <select id="withdrawProtocol" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none font-medium">
+                                <option value="PayPal">PayPal Corporate Email</option>
+                                <option value="Stripe">Stripe Account API String</option>
+                            </select>
+                            <input type="text" id="withdrawDestination" placeholder="Target Protocol Details" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
+                            <button onclick="window.executeWithdrawalIsolationPipeline()" class="w-full py-2.5 bg-corporate text-white text-xs font-black rounded-xl">Initialize Audit Isolation Loop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: SUPER ADMIN HUB -->
+                <div id="superAdminHub" class="tab-panel space-y-5 hidden">
+                    <div class="flex items-center gap-2 text-rose-800 border-b border-rose-100 pb-2 flex-row-rtl">
+                        <i class="fa-solid fa-circle-crown text-base animate-pulse"></i>
+                        <h3 class="text-sm font-black uppercase tracking-wider">Super Admin Master Power Panel</h3>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center font-mono text-[10px]">
+                        <div class="bg-rose-50/60 border border-rose-100 p-2 rounded-xl">
+                            <span class="text-[8px] text-slate-400 block font-bold uppercase">Total Players</span>
+                            <span class="font-black text-rose-900 text-xs">200 Members</span>
+                        </div>
+                        <div class="bg-rose-50/60 border border-rose-100 p-2 rounded-xl">
+                            <span class="text-[8px] text-slate-400 block font-bold uppercase">Live Stakes</span>
+                            <span id="adminLiveStakes" class="font-black text-slate-800 text-xs">0.00</span>
+                        </div>
+                        <div class="bg-rose-50/60 border border-rose-100 p-2 rounded-xl">
+                            <span class="text-[8px] text-slate-400 block font-bold uppercase">Net Profit</span>
+                            <span class="font-black text-emerald-700 text-xs">+48.2%</span>
+                        </div>
+                    </div>
+                    <div class="card-surface p-3.5 rounded-xl space-y-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 block">Central UID Search Directory</label>
+                        <div class="flex gap-2 flex-row-rtl">
+                            <input type="text" id="adminSearchUID" placeholder="Enter 6-Digit Player UID" class="flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none">
+                            <button onclick="window.executeAdminUIDSearch()" class="bg-rose-800 text-white text-xs font-bold px-4 py-1.5 rounded-lg shadow-sm">Scan Profile</button>
+                        </div>
+                        <div id="searchResultDisplay" class="hidden text-[11px] bg-white p-2 rounded-lg font-mono text-slate-600"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- STICKY BOTTOM NAVIGATION BAR -->
+            <div id="bottomNavBar" class="bg-white border-t border-slate-200 p-2 fixed bottom-0 max-w-md w-full z-40 flex justify-around flex-row-rtl">
+                <button id="navBtn1" onclick="window.switchTabPipeline(1)" class="flex flex-col items-center gap-0.5 text-corporate py-1 px-2.5 rounded-xl"><i class="fa-solid fa-gamepad text-base"></i><span class="text-[9px] font-black uppercase">Arena</span></button>
+                <button id="navBtn2" onclick="window.switchTabPipeline(2)" class="flex flex-col items-center gap-0.5 text-slate-400 py-1 px-2.5 rounded-xl"><i class="fa-solid fa-wallet text-base"></i><span class="text-[9px] font-black uppercase">Wallet</span></button>
+                <button id="navBtn3" onclick="window.switchTabPipeline(3)" class="flex flex-col items-center gap-0.5 text-slate-400 py-1 px-2.5 rounded-xl"><i class="fa-solid fa-network-wired text-base"></i><span class="text-[9px] font-black uppercase">Network</span></button>
+                <button id="navBtn4" onclick="window.switchTabPipeline(4)" class="flex flex-col items-center gap-0.5 text-slate-400 py-1 px-2.5 rounded-xl"><i class="fa-solid fa-file-invoice-dollar text-base"></i><span class="text-[9px] font-black uppercase">Ledger</span></button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MAIN MODULE LAYER (SCOPED CONFIG & GLOBAL WINDOW BINDING) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Global Error Intercept Log Catching for Mobile Testing
+        window.addEventListener('error', (e) => {
+            const consoleBox = document.getElementById('screenConsole');
+            if(consoleBox) {
+                consoleBox.classList.remove('hidden');
+                consoleBox.innerText = "Error Catch: " + e.message;
+            }
+        });
+
+        // Official Firebase Production Credentials
+        const firebaseConfig = {
+            apiKey: "AIzaSyALq0NOUj6diw8GUWa0Zd541scVStbYAo8",
+            authDomain: "tampa-67659.firebaseapp.com",
+            databaseURL: "https://tampa-67659-default-rtdb.firebaseio.com",
+            projectId: "tampa-67659",
+            storageBucket: "tampa-67659.firebasestorage.app",
+            messagingSenderId: "41323066065",
+            appId: "1:41323066065:web:e8f50e4a85db3756684bf0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // State Machine Scope Memory
+        let currentUser = null;
+        let pwaDeferredPrompt = null;
+        let activeLanguage = 'en';
+        let localTimers = { BigSmall: 25, Matka: 30, Balloons: 30, Spin: 30 };
+        let tapBoxState = { active: false, multiplier: 1.0, currentStake: 0 };
+
+        const languageDictionaryData = {
+            en: { wallet_bal: "Liquid Token Allocation Balance", locked_bal: "Locked (Pending Audit)", sync_btn: "Refresh Wallet Balance" },
+            ar: { wallet_bal: "رصيد تخصيص الرموز السائلة", locked_bal: "مغلق (في انتظار التدقيق)", sync_btn: "تحديث رصيد المحفظة" },
+            ur: { wallet_bal: "مائع ٹوکن مختص بیلنس", locked_bal: "مقفل (زیر التواء آڈٹ)", sync_btn: "والٹ بیلنس تازہ کریں" }
+        };
+
+        // EXPLICIT WINDOW ATTACHMENT TO BYPASS MODULE ISOLATION ON CLICK EVENTS
+        window.executeAuthenticationPipeline = function() {
+            const idVal = document.getElementById('loginInput').value.trim();
+            const refCodeInput = document.getElementById('refInput').value.trim();
+            if (!idVal) { alert("Access validation string required."); return; }
+
+            if (idVal === "8709913752") {
+                alert("Super Admin Master Power Panel Authorization Enabled.");
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainHubScreen').classList.remove('hidden');
+                document.getElementById('bottomNavBar').classList.add('hidden');
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+                document.getElementById('superAdminHub').classList.remove('hidden');
+                document.getElementById('adminLiveStakes').innerText = (Math.random() * 1500 + 300).toFixed(2) + " TKN";
+                return;
+            }
+
+            const allocatedUID = Math.floor(100000 + Math.random() * 900000).toString();
+            const selfGeneratedRef = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const currentTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+            currentUser = {
+                uid: allocatedUID,
+                nickname: idVal,
+                refCode: selfGeneratedRef,
+                balance: 100.00,
+                locked: 0.00,
+                referrer: refCodeInput,
+                timestamp: currentTimestamp
+            };
+
+            document.getElementById('profileTitle').innerText = currentUser.nickname;
+            document.getElementById('uidDisplay').innerText = "UID: " + currentUser.uid;
+            document.getElementById('terminalUID').innerText = currentUser.uid;
+            document.getElementById('terminalRefCode').innerText = currentUser.refCode;
+            document.getElementById('loginTimestampLog').innerText = currentUser.timestamp;
+            document.getElementById('avatarBox').innerText = currentUser.nickname.charAt(0).toUpperCase();
+            updateUIMetrics();
+
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainHubScreen').classList.remove('hidden');
+            window.switchTabPipeline(1);
+
+            // Cloud Save Loop Synchronization Setup
+            try {
+                set(ref(db, 'tampa_users/' + currentUser.uid), currentUser);
+                onValue(ref(db, 'tampa_users/' + currentUser.uid), (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        currentUser.balance = data.balance;
+                        currentUser.locked = data.locked;
+                        updateUIMetrics();
+                    }
+                });
+            } catch(err) {
+                console.error("Firebase Database communication failure: ", err);
+            }
+        };
+
+        window.switchTabPipeline = function(tabIndex) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById('tabPanel' + tabIndex).classList.remove('hidden');
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById('navBtn' + i);
+                if (btn) { btn.classList.remove('text-corporate'); btn.classList.add('text-slate-400'); }
+            }
+            const activeBtn = document.getElementById('navBtn' + tabIndex);
+            if (activeBtn) activeBtn.classList.add('text-corporate');
+        };
+
+        window.placeStake = function(gameKey, chosenSide) {
+            if (!currentUser) return;
+            const inputField = document.getElementById('stake' + gameKey);
+            const stakeVolume = parseFloat(inputField.value);
+
+            if (isNaN(stakeVolume) || stakeVolume <= 0) { alert("Invalid allocation magnitude entry."); return; }
+            if (currentUser.balance < stakeVolume) { alert("Insufficient token balance allocation."); return; }
+            if (currentUser.locked > 0) { alert("Access Lockout: Isolated ledger audit pending."); return; }
+
+            currentUser.balance -= stakeVolume;
+            updateUIMetrics();
+
+            const elementId = "pool" + (gameKey === 'BigSmall' ? chosenSide : gameKey + chosenSide);
+            const displayEl = document.getElementById(elementId);
+            if (displayEl) {
+                let currentPoolVal = parseFloat(displayEl.innerText) || 0;
+                displayEl.innerText = (currentPoolVal + stakeVolume).toFixed(2);
+            }
+            alert(`Stake confirmed on ${chosenSide}. Input verification logged.`);
+            inputField.value = "";
+        };
+
+        window.enterTapBox = function() {
+            const val = parseFloat(document.getElementById('stakeTapBox').value);
+            if (isNaN(val) || val <= 0 || currentUser.balance < val) { alert("Invalid entry token allocation."); return; }
+            currentUser.balance -= val;
+            updateUIMetrics();
+
+            tapBoxState.active = true;
+            tapBoxState.multiplier = 1.0;
+            tapBoxState.currentStake = val;
+
+            document.getElementById('tapRiskVal').innerText = val;
+            document.getElementById('btnTapBox').classList.add('hidden');
+            document.getElementById('btnPullOut').classList.remove('hidden');
+        };
+
+        window.pullOutTapBox = function() {
+            if (!tapBoxState.active) return;
+            const earnings = (tapBoxState.currentStake * tapBoxState.multiplier) * 0.97;
+            currentUser.balance += earnings;
+            updateUIMetrics();
+            alert(`Pulled out securely! Credited ${earnings.toFixed(2)} tokens (Luck is Your).`);
+            resetTapBoxUI();
+        };
+
+        function resetTapBoxUI() {
+            tapBoxState.active = false;
+            tapBoxState.multiplier = 1.0;
+            tapBoxState.currentStake = 0;
+            document.getElementById('tapRiskVal').innerText = "0";
+            document.getElementById('btnTapBox').classList.remove('hidden');
+            document.getElementById('btnPullOut').classList.add('hidden');
+            document.getElementById('stakeTapBox').value = "";
+        }
+
+        window.executeManualDepositRoute = function() {
+            const amt = parseFloat(document.getElementById('depositAmount').value);
+            if (isNaN(amt) || amt <= 0) { alert("Enter proper funding metric bounds."); return; }
+            currentUser.balance += amt;
+            updateUIMetrics();
+            alert(`Deposit logged. Instantly credited ${amt} tokens.`);
+            document.getElementById('depositAmount').value = "";
+        };
+
+        window.executeWithdrawalIsolationPipeline = function() {
+            const amt = parseFloat(document.getElementById('withdrawAmount').value);
+            const target = document.getElementById('withdrawDestination').value.trim();
+            if (isNaN(amt) || amt <= 0 || !target) { alert("Fill routing transaction forms completely."); return; }
+            if (currentUser.balance < amt) { alert("Insufficient funds to instantiate isolation pool."); return; }
+
+            currentUser.balance -= amt;
+            currentUser.locked += amt;
+            updateUIMetrics();
+            alert(`5-Hour Locked Rule Initiated. Isolated ${amt} tokens into secure pending audit.`);
+            document.getElementById('withdrawAmount').value = "";
+            document.getElementById('withdrawDestination').value = "";
+        };
+
+        window.hardSyncWalletMetrics = function() {
+            const icon = document.getElementById('syncIcon');
+            icon.classList.add('animate-spin');
+            setTimeout(() => icon.classList.remove('animate-spin'), 600);
+        };
+
+        window.executeLanguageLayoutToggle = function(langCode) {
+            activeLanguage = langCode;
+            const dirVal = (langCode === 'ar' || langCode === 'ur') ? 'rtl' : 'ltr';
+            document.body.setAttribute('dir', dirVal);
+            const labels = languageDictionaryData[langCode];
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (labels[key]) el.innerText = labels[key];
+            });
+        };
+
+        window.executeAdminUIDSearch = function() {
+            const uidStr = document.getElementById('adminSearchUID').value.trim();
+            const display = document.getElementById('searchResultDisplay');
+            display.classList.remove('hidden');
+            if (currentUser && uidStr === currentUser.uid) {
+                display.innerHTML = `<strong>UID Match Found:</strong><br>Nickname: ${currentUser.nickname}<br>Balance: ${currentUser.balance} TKN<br>Registered Code: ${currentUser.refCode}`;
+            } else {
+                display.innerText = "Query Error: Profile target UID string not found in index allocations.";
+            }
+        };
+
+        function updateUIMetrics() {
+            if (!currentUser) return;
+            document.getElementById('headerBalance').innerText = currentUser.balance.toFixed(2);
+            document.getElementById('walletCoreDisplay').innerText = currentUser.balance.toFixed(2);
+            document.getElementById('lockedBalanceDisplay').innerText = currentUser.locked.toFixed(2);
+        }
+
+        // --- Continuous Clock Intervals Engine Loop ---
+        setInterval(() => {
+            localTimers.BigSmall = localTimers.BigSmall <= 1 ? 25 : localTimers.BigSmall - 1;
+            document.getElementById('clockBigSmall').innerText = localTimers.BigSmall + "s";
+            if (localTimers.BigSmall === 0) resolvePlatformGameOutcome('BigSmall');
+
+            localTimers.Matka = localTimers.Matka <= 1 ? 30 : localTimers.Matka - 1;
+            document.getElementById('clockMatka').innerText = localTimers.Matka + "s";
+            if (localTimers.Matka === 0) resolvePlatformGameOutcome('Matka');
+
+            localTimers.Balloons = localTimers.Balloons <= 1 ? 30 : localTimers.Balloons - 1;
+            document.getElementById('clockBalloons').innerText = localTimers.Balloons + "s";
+            if (localTimers.Balloons === 0) resolvePlatformGameOutcome('Balloons');
+
+            localTimers.Spin = localTimers.Spin <= 1 ? 30 : localTimers.Spin - 1;
+            document.getElementById('clockSpin').innerText = localTimers.Spin + "s";
+            if (localTimers.Spin === 0) resolvePlatformGameOutcome('Spin');
+
+            if (tapBoxState.active) {
+                tapBoxState.multiplier += 0.15;
+                document.getElementById('tapMultiplier').innerText = tapBoxState.multiplier.toFixed(2) + "x";
+                if (tapBoxState.multiplier > 3.2) {
+                    alert("Bomb Exploded! Live risk capacity breached safety parameters.");
+                    resetTapBoxUI();
+                }
+            }
+        }, 1000);
+
+        function resolvePlatformGameOutcome(gameKey) {
+            let winnerSide = "Default";
+            if (gameKey === 'BigSmall') {
+                const bVal = parseFloat(document.getElementById('poolBig').innerText) || 0;
+                const sVal = parseFloat(document.getElementById('poolSmall').innerText) || 0;
+                winnerSide = bVal <= sVal ? "Big" : "Small";
+                document.getElementById('poolBig').innerText = "0";
+                document.getElementById('poolSmall').innerText = "0";
+            } else if (gameKey === 'Matka') {
+                const lVal = parseFloat(document.getElementById('poolMatkaL').innerText) || 0;
+                const rVal = parseFloat(document.getElementById('poolMatkaR').innerText) || 0;
+                winnerSide = lVal <= rVal ? "Left" : "Right";
+                document.getElementById('matkaLeft').innerText = Math.floor(Math.random() * 10);
+                document.getElementById('matkaRight').innerText = Math.floor(Math.random() * 10);
+                document.getElementById('poolMatkaL').innerText = "0";
+                document.getElementById('poolMatkaR').innerText = "0";
+            } else if (gameKey === 'Balloons') {
+                const aVal = parseFloat(document.getElementById('poolBalloonA').innerText) || 0;
+                const bVal = parseFloat(document.getElementById('poolBalloonB').innerText) || 0;
+                winnerSide = aVal <= bVal ? "A" : "B";
+                document.getElementById('poolBalloonA').innerText = "0";
+                document.getElementById('poolBalloonB').innerText = "0";
+            } else if (gameKey === 'Spin') {
+                const rVal = parseFloat(document.getElementById('poolSpinRed').innerText) || 0;
+                const wVal = parseFloat(document.getElementById('poolSpinWhite').innerText) || 0;
+                winnerSide = rVal <= wVal ? "Red" : "White";
+                document.getElementById('poolSpinRed').innerText = "0";
+                document.getElementById('poolSpinWhite').innerText = "0";
+            }
+
+            if (currentUser) {
+                if (Math.random() > 0.5) {
+                    currentUser.balance += (10 * 2.00) * 0.97;
+                    updateUIMetrics();
+                    alert(`[Outcome: ${winnerSide}] Luck is Your!`);
+                } else {
+                    alert(`[Outcome: ${winnerSide}] Luck is Bad!`);
+                }
+            }
+        }
+
+        // PWA Native Registration Integration Hook Inside Module Scope
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            pwaDeferredPrompt = e;
+            document.getElementById('pwaBanner').classList.remove('hidden');
+        });
+
+        window.triggerPWAInstallation = function() {
+            if (!pwaDeferredPrompt) return;
+            document.getElementById('pwaBanner').classList.add('hidden');
+            pwaDeferredPrompt.prompt();
+            pwaDeferredPrompt.userChoice.then(() => { pwaDeferredPrompt = null; });
+        };
+    </script>
+</body>
+</html>
