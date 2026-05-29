@@ -4,281 +4,265 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Tampa E-Arena</title>
-    <!-- Tailwind CSS for Premium Dark UI -->
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlRhbXBhIEUtQXJlbmEiLAogICJzaG9ydF9uYW1lIjogIlRhbXBhIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNGRkZGRkYiLAogICJ0aGVtZV9jb2xvciI6ICIjMUUzQThBIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsaXRpY29uLmNvbS81MTIvYzgvYzg1NDUucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXQp9">
+
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Official Firebase Production Credentials
+        const firebaseConfig = {
+            apiKey: "AIzaSyALq0NOUj6diw8GUWa0Zd541scVStbYAo8",
+            authDomain: "tampa-67659.firebaseapp.com",
+            databaseURL: "https://tampa-67659-default-rtdb.firebaseio.com",
+            projectId: "tampa-67659",
+            storageBucket: "tampa-67659.firebasestorage.app",
+            messagingSenderId: "41323066065",
+            appId: "1:41323066065:web:e8f50e4a85db3756684bf0"
+        };
+
+        // Initialize App & Services Global Bindings
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
+        window.db = getDatabase(app);
+        window.dbRefs = { ref, set, get, update, onValue };
+    </script>
+
     <style>
+        /* 1. Rigid Security Controls & Anti-Plagiarism */
         body {
-            user-select: none;
-            -webkit-user-select: none;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: #f8fafc;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            background-color: #FFFFFF;
+            color: #1E293B;
         }
-        .glow-btn {
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
-            transition: all 0.3s ease;
+        input, textarea {
+            user-select: text !important;
+            -webkit-user-select: text !important;
         }
-        .glow-btn:hover {
-            box-shadow: 0 0 25px rgba(99, 102, 241, 0.8);
-            transform: translateY(-2px);
+        /* Custom Clean Layout Components */
+        .card-surface {
+            background-color: #F8F9FA;
+            border: 1px solid #E2E8F0;
         }
+        .text-corporate { color: #1E3A8A; }
+        .bg-corporate { background-color: #1E3A8A; }
+        .border-corporate { border-color: #1E3A8A; }
+        
+        /* RTL Custom utilities */
+        [dir="rtl"] .text-left-rtl { text-align: right; }
+        [dir="rtl"] .flex-row-rtl { flex-direction: row-reverse; }
     </style>
 </head>
-<body oncontextmenu="return false;" oncopy="return false;" onpaste="return false;" class="min-h-screen flex flex-col items-center justify-between font-sans selection:bg-indigo-500">
+<body oncontextmenu="return false;" oncopy="return false;" onpaste="return false;" class="min-h-screen flex flex-col items-center justify-start bg-white antialiased selection:bg-none">
 
-    <!-- Auth Terminal Section -->
-    <div id="authContainer" class="w-full max-w-md p-6 my-auto bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-3xl shadow-2xl text-center mx-4">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-600/20 text-indigo-400 rounded-2xl mb-4 border border-indigo-500/30 text-2xl">
-            <i class="fa-solid fa-gamepad"></i>
+    <div id="pwaBanner" class="w-full max-w-md bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center justify-between hidden sticky top-0 z-[100]">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-mobile-screen-button text-amber-700 text-base"></i>
+            <span class="text-xs font-bold text-amber-900">Install Tampa App to Home Screen</span>
         </div>
-        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">TAMPA E-ARENA</h2>
-        <p class="text-slate-400 mt-2 text-sm">Enter your profile credential to access the live dashboard pool</p>
-        
-        <div class="mt-6 text-left">
-            <label class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Access Token / Nickname</label>
-            <input type="text" id="userInput" placeholder="e.g., Player1 or Admin Bypass ID" class="w-full px-4 py-3 bg-slate-950/60 border border-slate-800 rounded-xl focus:border-indigo-500 focus:outline-none text-slate-200 placeholder:text-slate-600 font-medium">
-        </div>
-        
-        <button onclick="handleLogin()" class="w-full mt-6 py-3 bg-indigo-600 text-white font-bold rounded-xl glow-btn transition-all duration-200">
-            Connect Secure Terminal
-        </button>
+        <button onclick="triggerPWAInstallation()" class="bg-corporate text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-sm">INSTALL</button>
     </div>
 
-    <!-- Main Live Gaming Hub -->
-    <div id="mainHub" class="w-full max-w-md bg-slate-950 min-h-screen flex flex-col justify-between hidden shadow-2xl border-x border-slate-900">
-        <!-- Top Status Navbar -->
-        <div class="p-4 bg-slate-900/50 border-b border-slate-900 backdrop-blur-md sticky top-0 z-50 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white shadow-md shadow-indigo-500/20" id="userAvatar">P</div>
+    <div id="appContainer" class="w-full max-w-md min-h-screen flex flex-col justify-between bg-white border-x border-slate-200 relative shadow-md">
+        
+        <div id="loginScreen" class="flex-1 flex flex-col items-center justify-center p-6 space-y-6">
+            <div class="w-16 h-16 bg-blue-50 text-corporate rounded-2xl flex items-center justify-center text-3xl border border-blue-100 shadow-sm">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="text-center">
+                <h2 class="text-2xl font-black tracking-tight text-corporate uppercase">Tampa E-Arena</h2>
+                <p class="text-xs text-slate-500 mt-1">Full-Stack Real-Time Production Terminal</p>
+            </div>
+
+            <div class="w-full space-y-4 pt-4">
                 <div>
-                    <h4 class="text-sm font-bold text-slate-200 leading-tight" id="hubTitle">Terminal Loading...</h4>
-                    <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Live Stream Loop</span>
+                    <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">Access Credentials / Phone Identifier</label>
+                    <input type="text" id="loginInput" placeholder="Enter Nickname or Admin Identifier" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-sm focus:outline-none focus:border-blue-800">
                 </div>
-            </div>
-            <div class="bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-coins text-amber-400 text-sm"></i>
-                <span class="text-sm font-black text-amber-200 tracking-wide" id="walletDisplay">100.00</span>
+                <div>
+                    <label class="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">Referral Code (Optional - 4 Digits)</label>
+                    <input type="text" id="refInput" maxLength="4" placeholder="e.g., 1234" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-sm focus:outline-none focus:border-blue-800">
+                </div>
+                <button onclick="executeAuthenticationPipeline()" class="w-full py-3.5 bg-corporate hover:bg-blue-900 text-white font-black rounded-xl text-sm transition-all shadow-md">
+                    INITIALIZE SECURE ACCESS
+                </button>
             </div>
         </div>
 
-        <!-- Scrollable Platform Dynamic Body -->
-        <div class="p-4 flex-1 overflow-y-auto space-y-5 pb-24">
+        <div id="mainHubScreen" class="flex-1 flex flex-col hidden">
             
-            <!-- Tab 1: Games Arena Container -->
-            <div id="content1" class="app-content space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-black text-slate-200 tracking-wide uppercase">Active Battle Grounds</h3>
-                    <span class="text-xs bg-slate-900 text-indigo-400 px-2 py-1 rounded-md font-mono border border-slate-800">100% Real Players</span>
+            <div class="p-4 bg-white border-b border-slate-100 flex items-center justify-between sticky top-0 z-40">
+                <div class="flex items-center gap-2">
+                    <div id="avatarBox" class="w-9 h-9 bg-corporate text-white font-black rounded-xl flex items-center justify-center text-sm shadow-sm">U</div>
+                    <div>
+                        <h4 id="profileTitle" class="text-xs font-black text-slate-800 leading-tight">Loading Node...</h4>
+                        <span id="uidDisplay" class="text-[9px] text-slate-400 font-mono tracking-wider block">UID: ------</span>
+                    </div>
                 </div>
+                <div class="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/60 flex items-center gap-1.5">
+                    <i class="fa-solid fa-wallet text-corporate text-xs"></i>
+                    <span id="headerBalance" class="text-xs font-black text-slate-800 tracking-wide">0.00</span>
+                    <span class="text-[9px] font-bold text-slate-400">TKN</span>
+                </div>
+            </div>
+
+            <div id="panelScrollArea" class="p-4 flex-1 overflow-y-auto space-y-6 pb-24 text-left-rtl">
                 
-                <!-- Game Card 1: Typing Duel -->
-                <div class="bg-gradient-to-r from-slate-900 to-indigo-950/40 p-4 rounded-2xl border border-slate-800/80 relative overflow-hidden group">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Game 1: Speed Typing</span>
-                            <h4 class="text-lg font-bold text-slate-100 mt-1">Break Mind 1v1</h4>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-slate-500 font-medium block">Live Room Timer</span>
-                            <span class="text-sm font-mono font-bold text-indigo-400" id="timer1">25s</span>
-                        </div>
+                <div id="tabPanel1" class="tab-panel space-y-4">
+                    <div class="flex justify-between items-center flex-row-rtl">
+                        <h3 class="text-xs font-black uppercase tracking-wider text-slate-400"><i class="fa-solid fa-gamepad mr-1"></i> Continuous Game Pools</h3>
+                        <span class="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">Anti-Drain Active</span>
                     </div>
-                    <p class="text-xs text-slate-400 mt-2">Defeat opponents in real-time fast typing contests. Fast fingers win.</p>
-                    <div class="mt-4 flex items-center justify-between pt-3 border-t border-slate-900">
-                        <span class="text-xs text-slate-500">Entry Pool: <strong class="text-slate-300">10 Tokens</strong></span>
-                        <button onclick="startGame('Break Mind 1v1')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/10">Launch Room</button>
-                    </div>
-                </div>
 
-                <!-- Game Card 2: Matka King Clock -->
-                <div class="bg-gradient-to-r from-slate-900 to-purple-950/40 p-4 rounded-2xl border border-slate-800/80 relative overflow-hidden group">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Game 2: continuous Matrix</span>
-                            <h4 class="text-lg font-bold text-slate-100 mt-1">Matka King Loop</h4>
+                    <div class="card-surface p-4 rounded-2xl space-y-3 relative">
+                        <div class="flex justify-between items-start flex-row-rtl">
+                            <div>
+                                <span class="text-[9px] bg-blue-50 text-corporate font-black px-2 py-0.5 rounded-md uppercase tracking-wider">Game 1</span>
+                                <h4 class="text-base font-black text-slate-800 mt-1">Big vs Small Loop</h4>
+                            </div>
+                            <div class="text-right text-left-rtl">
+                                <span class="text-[9px] text-slate-400 block uppercase font-bold">Loop Clock</span>
+                                <span id="clockBigSmall" class="text-sm font-mono font-black text-corporate">25s</span>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <span class="text-xs text-slate-500 font-medium block">Loop Cycle</span>
-                            <span class="text-sm font-mono font-bold text-purple-400" id="timer2">30s</span>
+                        <div class="grid grid-cols-2 gap-2 bg-white p-2 rounded-xl border border-slate-100 font-mono text-xs">
+                            <div class="text-center p-1 bg-slate-50 rounded">Big Pool: <span id="poolBig" class="font-bold">0</span></div>
+                            <div class="text-center p-1 bg-slate-50 rounded">Small Pool: <span id="poolSmall" class="font-bold">0</span></div>
+                        </div>
+                        <div class="flex gap-2 items-center flex-row-rtl">
+                            <input type="number" id="stakeBigSmall" placeholder="Tokens Entry Volume" class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
+                            <button onclick="placeStake('BigSmall', 'Big')" class="bg-corporate text-white text-xs font-bold px-3 py-2 rounded-xl">Stk Big</button>
+                            <button onclick="placeStake('BigSmall', 'Small')" class="bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl">Stk Small</button>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-400 mt-2">Predict system outcome logic matrix numbers securely every 30 seconds.</p>
-                    <div class="mt-4 flex items-center justify-between pt-3 border-t border-slate-900">
-                        <span class="text-xs text-slate-500">Multiplier: <strong class="text-emerald-400">2.00x Luck</strong></span>
-                        <button onclick="startGame('Matka King Loop')" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-purple-600/10">Enter State</button>
-                    </div>
-                </div>
 
-                <!-- Game Card 3: Balloon Bomb Booster -->
-                <div class="bg-gradient-to-r from-slate-900 to-pink-950/40 p-4 rounded-2xl border border-slate-800/80 relative overflow-hidden group">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-[10px] bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Game 3: Tap Elimination</span>
-                            <h4 class="text-lg font-bold text-slate-100 mt-1">Balloons Bomb (A vs B)</h4>
+                    <div class="card-surface p-4 rounded-2xl space-y-3 relative">
+                        <div class="flex justify-between items-start flex-row-rtl">
+                            <div>
+                                <span class="text-[9px] bg-blue-50 text-corporate font-black px-2 py-0.5 rounded-md uppercase tracking-wider">Game 2</span>
+                                <h4 class="text-base font-black text-slate-800 mt-1">Matka King Pot Matrix</h4>
+                            </div>
+                            <div class="text-right text-left-rtl">
+                                <span class="text-[9px] text-slate-400 block uppercase font-bold">Clock Loop</span>
+                                <span id="clockMatka" class="text-sm font-mono font-black text-purple-800">30s</span>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <span class="text-xs text-slate-500 font-medium block">Status</span>
-                            <span class="text-xs font-bold text-emerald-400 uppercase bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md animate-pulse">Ready</span>
+                        <div class="bg-white p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center space-y-2">
+                            <div id="potGraphic" class="text-3xl text-amber-600 transition-all duration-300"><i class="fa-solid fa-jar animate-bounce"></i></div>
+                            <div class="flex gap-4 font-mono text-sm font-black">
+                                <div class="bg-slate-100 px-3 py-1 rounded">L: <span id="matkaLeft">0</span></div>
+                                <div class="bg-slate-100 px-3 py-1 rounded">R: <span id="matkaRight">0</span></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 font-mono text-[11px]">
+                            <div class="p-1 bg-slate-50 rounded text-center">Left Pool: <span id="poolMatkaL">0</span></div>
+                            <div class="p-1 bg-slate-50 rounded text-center">Right Pool: <span id="poolMatkaR">0</span></div>
+                        </div>
+                        <div class="flex gap-2 items-center flex-row-rtl">
+                            <input type="number" id="stakeMatka" placeholder="Tokens" class="w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
+                            <button onclick="placeStake('Matka', 'Left')" class="flex-1 bg-purple-800 text-white text-xs font-bold py-2 rounded-xl">Stake Left</button>
+                            <button onclick="placeStake('Matka', 'Right')" class="flex-1 bg-slate-800 text-white text-xs font-bold py-2 rounded-xl">Stake Right</button>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-400 mt-2">Pop competing team balloons dynamically without triggering the anti-drain loops.</p>
-                    <div class="mt-4 flex items-center justify-between pt-3 border-t border-slate-900">
-                        <span class="text-xs text-slate-500">Safety Check: <strong class="text-slate-300">Automated</strong></span>
-                        <button onclick="startGame('Balloons Bomb')" class="bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-pink-600/10">Join Arena</button>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Tab 2: Secure Wallet Panel -->
-            <div id="content2" class="app-content hidden space-y-4">
-                <h3 class="text-lg font-black text-slate-200 tracking-wide uppercase">Secure Ledger Wallet</h3>
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-center">
-                    <span class="text-xs text-slate-400 block uppercase tracking-wider">Available Balance Token</span>
-                    <h2 class="text-4xl font-black text-amber-400 mt-1 tracking-wide" id="walletMainBalance">100.00</h2>
-                    <p class="text-[10px] text-slate-500 mt-2">Rotating key authentication validation engine securely mapped</p>
-                    <button onclick="refreshBalance()" class="mt-4 w-full py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-200 text-sm font-bold rounded-xl border border-slate-700/60 flex items-center justify-center gap-2 transition-all"><i class="fa-solid fa-rotate-right" id="refreshIcon"></i> Refresh Balance Engine</button>
-                </div>
-            </div>
-
-            <!-- Tab 3: Referral Management -->
-            <div id="content3" class="app-content hidden space-y-4">
-                <h3 class="text-lg font-black text-slate-200 tracking-wide uppercase">Referral Distribution Panel</h3>
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                    <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-850">
-                        <div>
-                            <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider block">Your Invite Link Code</span>
-                            <span class="text-base font-mono font-bold text-indigo-400 tracking-widest uppercase">TMPX99</span>
+                    <div class="card-surface p-4 rounded-2xl space-y-3 relative">
+                        <div class="flex justify-between items-start flex-row-rtl">
+                            <div>
+                                <span class="text-[9px] bg-blue-50 text-corporate font-black px-2 py-0.5 rounded-md uppercase tracking-wider">Game 3</span>
+                                <h4 class="text-base font-black text-slate-800 mt-1">Tap Box Escalator</h4>
+                            </div>
+                            <div class="text-right text-left-rtl">
+                                <span class="text-[9px] text-slate-400 block uppercase font-bold">Multiplier Loop</span>
+                                <span id="tapMultiplier" class="text-base font-mono font-black text-rose-700">1.00x</span>
+                            </div>
                         </div>
-                        <button onclick="alert('Referral copied!')" class="p-2 bg-indigo-600 text-white rounded-lg text-sm"><i class="fa-regular fa-copy"></i></button>
+                        <p class="text-[11px] text-slate-500">24/7 automated risk sequence loop. Pull out your earnings securely before explosive risk capacity triggers execution burst loop!</p>
+                        <div id="tapBoxPoolInfo" class="text-center p-1.5 font-mono text-xs bg-white border border-slate-100 rounded-xl">Live Risk Weight: <span id="tapRiskVal" class="font-bold">0</span> Tokens</div>
+                        <div class="flex gap-2 flex-row-rtl">
+                            <input type="number" id="stakeTapBox" placeholder="Entry Amount" class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
+                            <button onclick="enterTapBox()" id="btnTapBox" class="bg-rose-700 text-white text-xs font-black px-4 py-2 rounded-xl shadow-sm">Enter Escalator</button>
+                            <button onclick="pullOutTapBox()" id="btnPullOut" class="bg-emerald-600 text-white text-xs font-black px-4 py-2 rounded-xl shadow-sm hidden">Secure Out</button>
+                        </div>
                     </div>
-                    <p class="text-xs text-slate-400 mt-3 leading-relaxed">Tracks historical <strong class="text-emerald-400">1% recurring stake volume commission</strong> instantly credited directly into your node wallet from referee match entries.</p>
-                </div>
-            </div>
 
-            <!-- Tab 4: Financial Ledger -->
-            <div id="content4" class="app-content hidden space-y-4">
-                <h3 class="text-lg font-black text-slate-200 tracking-wide uppercase">Isolation Pool Audit</h3>
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
-                    <div class="flex justify-between items-center bg-slate-950 p-3 rounded-xl border border-slate-850">
-                        <span class="text-xs font-bold text-slate-300">5-Hour Locking Loop</span>
-                        <span class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded font-mono font-bold">ACTIVE</span>
+                    <div class="card-surface p-4 rounded-2xl space-y-3 relative">
+                        <div class="flex justify-between items-start flex-row-rtl">
+                            <div>
+                                <span class="text-[9px] bg-blue-50 text-corporate font-black px-2 py-0.5 rounded-md uppercase tracking-wider">Game 4</span>
+                                <h4 class="text-base font-black text-slate-800 mt-1">Balloons Bomb (A vs B)</h4>
+                            </div>
+                            <div class="text-right text-left-rtl">
+                                <span class="text-[9px] text-slate-400 block uppercase font-bold">Blast Timer</span>
+                                <span id="clockBalloons" class="text-sm font-mono font-black text-amber-700">30s</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 py-2">
+                            <div class="bg-white border border-slate-100 rounded-xl p-3 text-center flex flex-col items-center">
+                                <i class="fa-solid fa-circle text-sky-500 text-2xl animate-pulse"></i>
+                                <span class="text-xs font-black mt-1">Balloon A</span>
+                                <span id="poolBalloonA" class="text-[10px] text-slate-400 font-mono">Pool: 0</span>
+                            </div>
+                            <div class="bg-white border border-slate-100 rounded-xl p-3 text-center flex flex-col items-center">
+                                <i class="fa-solid fa-circle text-rose-500 text-2xl animate-pulse"></i>
+                                <span class="text-xs font-black mt-1">Balloon B</span>
+                                <span id="poolBalloonB" class="text-[10px] text-slate-400 font-mono">Pool: 0</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 flex-row-rtl">
+                            <input type="number" id="stakeBalloons" placeholder="Tokens" class="w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
+                            <button onclick="placeStake('Balloons', 'A')" class="flex-1 bg-sky-600 text-white text-xs font-black py-2 rounded-xl">Back A</button>
+                            <button onclick="placeStake('Balloons', 'B')" class="flex-1 bg-rose-600 text-white text-xs font-black py-2 rounded-xl">Back B</button>
+                        </div>
                     </div>
-                    <p class="text-xs text-slate-400">Once an active withdrawal request payout is initiated, system rules completely bar game tokens to prevent concurrency drain conflicts until validations conclude.</p>
-                </div>
-            </div>
 
-            <!-- Super Admin Power Intercept Module -->
-            <div id="adminModule" class="hidden border-t-2 border-dashed border-rose-500/40 pt-5 space-y-4">
-                <div class="flex items-center gap-2 text-rose-400">
-                    <i class="fa-solid fa-shield-halved text-lg"></i>
-                    <h3 class="text-lg font-black uppercase tracking-wide">Super Admin Master Panel</h3>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-rose-950/20 border border-rose-900/40 p-3 rounded-xl text-center">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Live Platform Users</span>
-                        <span class="text-xl font-mono font-black text-rose-400">200 Members</span>
+                    <div class="card-surface p-4 rounded-2xl space-y-3 relative">
+                        <div class="flex justify-between items-start flex-row-rtl">
+                            <div>
+                                <span class="text-[9px] bg-blue-50 text-corporate font-black px-2 py-0.5 rounded-md uppercase tracking-wider">Game 5</span>
+                                <h4 class="text-base font-black text-slate-800 mt-1">Spin Tunnel Wheel</h4>
+                            </div>
+                            <div class="text-right text-left-rtl">
+                                <span class="text-[9px] text-slate-400 block uppercase font-bold">Spin Clock</span>
+                                <span id="clockSpin" class="text-sm font-mono font-black text-slate-700">30s</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-center p-2 bg-white rounded-xl border border-slate-100">
+                            <div id="wheelGraphic" class="w-12 h-12 rounded-full border-4 border-dashed border-corporate flex items-center justify-center text-xs transition-all duration-1000">⚪</div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-center font-mono text-[10px]">
+                            <div class="p-1 bg-rose-50 text-rose-900 rounded">Red Track: <span id="poolSpinRed">0</span></div>
+                            <div class="p-1 bg-slate-100 text-slate-900 rounded">White Track: <span id="poolSpinWhite">0</span></div>
+                        </div>
+                        <div class="flex gap-2 flex-row-rtl">
+                            <input type="number" id="stakeSpin" placeholder="Tokens" class="w-1/3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none">
+                            <button onclick="placeStake('Spin', 'Red')" class="flex-1 bg-rose-600 text-white text-xs font-black py-2 rounded-xl">Back Red</button>
+                            <button onclick="placeStake('Spin', 'White')" class="flex-1 bg-slate-200 text-slate-800 text-xs font-black py-2 rounded-xl border border-slate-300">Back White</button>
+                        </div>
                     </div>
-                    <div class="bg-rose-950/20 border border-rose-900/40 p-3 rounded-xl text-center">
-                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Net System Profit</span>
-                        <span class="text-xl font-mono font-black text-emerald-400">+48.2%</span>
+
+                    <div class="bg-slate-100/60 p-4 rounded-2xl border border-slate-200/40 text-center py-6">
+                        <i class="fa-solid fa-trophy text-slate-400 text-xl block mb-1"></i>
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest">Tournaments - Coming Soon</h4>
                     </div>
                 </div>
-                <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl">
-                    <span class="text-xs font-bold text-slate-300 block mb-2">UID Target Query Engine</span>
-                    <div class="flex gap-2">
-                        <input type="text" placeholder="Search user ID string..." class="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200">
-                        <button onclick="alert('Scanning UID database records...')" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">Scan</button>
-                    </div>
-                </div>
-            </div>
 
-        </div>
-
-        <!-- Sticky Bottom Navigation Core Bar -->
-        <div class="bg-slate-900/90 border-t border-slate-900 p-2 backdrop-blur-md fixed bottom-0 max-w-md w-full z-50 flex justify-around">
-            <button id="nav1" onclick="switchTab(1)" class="flex flex-col items-center gap-1 text-indigo-400 transition-all py-1 px-3 rounded-xl"><i class="fa-solid fa-gamepad text-lg"></i><span class="text-[10px] font-bold">Arena</span></button>
-            <button id="nav2" onclick="switchTab(2)" class="flex flex-col items-center gap-1 text-slate-500 transition-all py-1 px-3 rounded-xl"><i class="fa-solid fa-wallet text-lg"></i><span class="text-[10px] font-bold">Wallet</span></button>
-            <button id="nav3" onclick="switchTab(3)" class="flex flex-col items-center gap-1 text-slate-500 transition-all py-1 px-3 rounded-xl"><i class="fa-solid fa-users-rectangle text-lg"></i><span class="text-[10px] font-bold">Referral</span></button>
-            <button id="nav4" onclick="switchTab(4)" class="flex flex-col items-center gap-1 text-slate-500 transition-all py-1 px-3 rounded-xl"><i class="fa-solid fa-receipt text-lg"></i><span class="text-[10px] font-bold">Ledger</span></button>
-        </div>
-    </div>
-
-    <!-- Active Game Execution Room Modal Overlay -->
-    <div id="gameModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center hidden p-6">
-        <div class="w-full max-w-sm text-center space-y-6">
-            <div class="animate-spin inline-block w-14 h-14 border-4 border-indigo-500 border-t-transparent rounded-full text-indigo-500" role="status"></div>
-            <div>
-                <h2 class="text-2xl font-black tracking-wide text-slate-100" id="activeGameTitle">Game Loading</h2>
-                <p class="text-sm text-slate-400 mt-2">Establishing full-stack real player match vectors. If no user is found, the system will automatically trigger a 100% entry fee refund policy.</p>
-            </div>
-            <button onclick="closeGame()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold rounded-xl transition-all">Cancel Match & Return</button>
-        </div>
-    </div>
-
-    <script>
-        // Real-time asynchronous state loops for Clocks
-        let time1 = 25;
-        let time2 = 30;
+                <div id="tabPanel2" class="tab-panel space-y-4 hidden">
+                    <div class="flex justify-between items-center flex-row-rtl">
+                        <h3 class="text-xs font-black uppercase tracking-wider text-slate-400">Secure Node Wallet Hub</h3>
+                        
+                        <select onchange="executeLanguageLayoutToggle(this.value)" class="text-xs bg-slate-50 border border-slate-300 rounded-lg p-1 font-bold">
+                            <option value="en">English (LTR)</option>
+                            <option value="ar">العربية (RTL)</option>
+                            <option value="ur">اردو (RTL)</option>
+       
         
-        setInterval(() => {
-            time1 = time1 <= 1 ? 25 : time1 - 1;
-            document.getElementById('timer1').innerText = time1 + "s";
-            
-            time2 = time2 <= 1 ? 30 : time2 - 1;
-            document.getElementById('timer2').innerText = time2 + "s";
-        }, 1000);
-
-        function handleLogin() {
-            const inputVal = document.getElementById('userInput').value.trim();
-            if(!inputVal) { alert('Please enter profile access credentials.'); return; }
-
-            document.getElementById('authContainer').classList.add('hidden');
-            document.getElementById('mainHub').classList.remove('hidden');
-            
-            const firstLetter = inputVal.charAt(0).toUpperCase();
-            document.getElementById('userAvatar').innerText = firstLetter;
-
-            // Master Phone access index override intercept logic check
-            if(inputVal === "8709913752") {
-                document.getElementById('hubTitle').innerHTML = '👑 Master Admin Hub';
-                document.getElementById('adminModule').classList.remove('hidden');
-                alert('Super Admin Terminal Identity Verified. Real-time controls active.');
-            } else {
-                document.getElementById('hubTitle').innerText = 'Player: ' + inputVal;
-                document.getElementById('adminModule').classList.add('hidden');
-            }
-        }
-
-        function switchTab(tabNum) {
-            for(let i=1; i<=4; i++) {
-                document.getElementById('content' + i).classList.add('hidden');
-                const navBtn = document.getElementById('nav' + i);
-                navBtn.classList.remove('text-indigo-400');
-                navBtn.classList.add('text-slate-500');
-            }
-            document.getElementById('content' + tabNum).classList.remove('hidden');
-            const activeNav = document.getElementById('nav' + tabNum);
-            activeNav.classList.remove('text-slate-500');
-            activeNav.classList.add('text-indigo-400');
-        }
-
-        function startGame(gameName) {
-            document.getElementById('activeGameTitle').innerText = "Connecting: " + gameName;
-            document.getElementById('gameModal').classList.remove('hidden');
-        }
-
-        function closeGame() {
-            document.getElementById('gameModal').classList.add('hidden');
-        }
-
-        function refreshBalance() {
-            const icon = document.getElementById('refreshIcon');
-            icon.classList.add('animate-spin');
-            setTimeout(() => {
-                icon.classList.remove('animate-spin');
-                alert('Wallet balance nodes successfully synchronized across continuous chains.');
-            }, 1200);
-        }
-    </script>
-</body>
-    </html>
