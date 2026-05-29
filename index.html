@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Tampa Mobile Node</title>
+    <title>Tampa Premium Console</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,380 +12,410 @@
         body {
             user-select: none !important;
             -webkit-user-select: none !important;
-            background-color: #0B0F19;
-            color: #E2E8F0;
+            background-color: #090D16;
+            color: #F1F5F9;
             font-family: system-ui, -apple-system, sans-serif;
         }
-        .rainbow-container {
-            background: linear-gradient(45deg, #ff0055, #0099ff, #00ff77, #ffcc00);
-            background-size: 300% 300%;
-            animation: rainbowFlow 6s ease infinite;
+        .rainbow-title {
+            background: linear-gradient(45deg, #FF3366, #33CCFF, #33FF99, #FFCC00);
+            background-size: 400% 400%;
+            animation: moveGradient 4s linear infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        @keyframes rainbowFlow {
+        @keyframes moveGradient {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        .app-panel-box {
-            background-color: #161D30;
-            border: 1px solid #24304F;
+        .premium-card {
+            background: linear-gradient(135deg, #151D30 0%, #101626 100%);
+            border: 1px solid #1E2942;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
-        /* Lock view parameters to look like native app */
-        .phone-frame {
-            max-width: 450px;
+        .inner-inset-box {
+            background-color: #0C1220;
+            border: 1px solid #1A2338;
+        }
+        .phone-container {
+            max-width: 460px;
             width: 100%;
-            min-height: screen;
+            min-height: 100vh;
         }
+        /* Custom balloon popping physics animation frames */
+        @keyframes balloonPop {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.8; filter: hue-rotate(90deg); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .pop-active { animation: balloonPop 0.4s ease-out forwards; }
         ::-webkit-scrollbar { display: none; }
-        [dir="rtl"] .rtl-flip { flex-direction: row-reverse; text-align: right; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center bg-slate-950 antialiased">
+<body class="min-h-screen flex items-center justify-center bg-[#05070B] antialiased">
 
-    <div id="phoneView" class="phone-frame min-h-screen bg-[#0B0F19] flex flex-col justify-between relative shadow-2xl border-x border-slate-800/60 pb-20">
+    <div id="applicationMobileFrame" class="phone-container bg-[#090D16] flex flex-col justify-between relative shadow-2xl border-x border-[#1E2942] pb-16">
         
-        <div id="authGateScreen" class="flex-1 flex flex-col p-6 justify-center space-y-6">
-            <div class="text-center space-y-2">
-                <div class="rainbow-container inline-block px-6 py-2.5 rounded-2xl border-2 border-white/20 shadow-lg">
-                    <h1 class="text-2xl font-black text-white tracking-widest uppercase">TAMPA</h1>
+        <div id="authTerminalGate" class="flex-1 flex flex-col p-6 justify-center space-y-6">
+            <div class="text-center space-y-3">
+                <div class="inline-block px-8 py-3 rounded-2xl bg-[#111827] border border-slate-800 shadow-xl">
+                    <h1 class="text-4xl font-black tracking-widest uppercase rainbow-title">TAMPA</h1>
                 </div>
-                <p class="text-xs text-slate-400">Professional High-Performance Terminal Node</p>
+                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Premium Gaming Infrastructure</p>
             </div>
 
-            <div id="credentialsForm" class="space-y-3 pt-2">
+            <div class="space-y-4 pt-4">
                 <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mobile Number</label>
-                    <input type="tel" id="authPhone" placeholder="Enter Mobile Identifier" class="w-full px-4 py-3 bg-[#161D30] border border-slate-700/60 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500 font-mono">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mobile Number</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-phone absolute left-4 top-3.5 text-slate-500 text-xs"></i>
+                        <input type="tel" id="inputNodePhone" placeholder="Enter Linked Mobile" class="w-full pl-10 pr-4 py-3 bg-[#111726] border border-[#1E2942] rounded-xl text-sm text-white focus:outline-none focus:border-blue-500 font-mono">
+                    </div>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Password</label>
-                    <input type="password" id="authPass" placeholder="Enter Secret Key" class="w-full px-4 py-3 bg-[#161D30] border border-slate-700/60 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-500 text-xs"></i>
+                        <input type="password" id="inputNodePass" placeholder="Enter Access Code" class="w-full pl-10 pr-4 py-3 bg-[#111726] border border-[#1E2942] rounded-xl text-sm text-white focus:outline-none focus:border-blue-500">
+                    </div>
                 </div>
-                <div id="signUpOnlyFields" class="space-y-3 hidden">
+                
+                <div id="registrationExtendedFields" class="space-y-4 hidden">
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Confirm Password</label>
-                        <input type="password" id="authConfirmPass" placeholder="Re-enter Secret Key" class="w-full px-4 py-3 bg-[#161D30] border border-slate-700/60 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Confirm Password</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-shield absolute left-4 top-3.5 text-slate-500 text-xs"></i>
+                            <input type="password" id="inputNodeConfirmPass" placeholder="Re-enter Access Code" class="w-full pl-10 pr-4 py-3 bg-[#111726] border border-[#1E2942] rounded-xl text-sm text-white focus:outline-none focus:border-blue-500">
+                        </div>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Referral Code (5 Digits - Optional)</label>
-                        <input type="text" id="authRefCode" maxLength="5" placeholder="e.g., X9B21" class="w-full px-4 py-3 bg-[#161D30] border border-slate-700/60 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500 font-mono uppercase">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Referral Link Token (Optional)</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user-plus absolute left-4 top-3.5 text-slate-500 text-xs"></i>
+                            <input type="text" id="inputNodeReferralCode" maxLength="5" placeholder="5-Digit Token" class="w-full pl-10 pr-4 py-3 bg-[#111726] border border-[#1E2942] rounded-xl text-sm text-white focus:outline-none focus:border-blue-500 font-mono uppercase">
+                        </div>
                     </div>
                 </div>
 
-                <button onclick="window.processSystemAuthentication()" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm rounded-xl transition-all shadow-md shadow-blue-900/30">
-                    <span id="authBtnLabel">AUTHENTICATE SYSTEM</span>
+                <button onclick="window.processAccessVerificationPipeline()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs rounded-xl tracking-widest shadow-lg transition-transform active:scale-[0.98]">
+                    <span id="authSubmitActionText">INITIALIZE TERMINAL SECURE ACCESS</span>
                 </button>
 
-                <div class="flex items-center justify-between text-xs text-slate-400 px-1 pt-1">
-                    <button onclick="window.toggleAuthMode()" id="authModeToggler" class="hover:text-white font-bold">New Here? Create 5-Digit Node Account</button>
+                <div class="text-center pt-2">
+                    <button onclick="window.switchAuthGateModule()" id="authViewModuleToggleBtn" class="text-xs text-blue-400 font-bold hover:underline">New User registration? Open 5-Digit Node Engine</button>
                 </div>
             </div>
 
             <div class="relative flex py-2 items-center">
-                <div class="flex-grow border-t border-slate-800"></div>
-                <span class="flex-shrink mx-4 text-slate-500 text-[10px] font-bold uppercase tracking-widest">OR CONTINUUM</span>
-                <div class="flex-grow border-t border-slate-800"></div>
+                <div class="flex-grow border-t border-[#1E2942]"></div>
+                <span class="flex-shrink mx-4 text-slate-600 text-[10px] font-black tracking-widest">OR</span>
+                <div class="flex-grow border-t border-[#1E2942]"></div>
             </div>
 
-            <button onclick="window.instantiateGuestSession()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-black text-sm rounded-xl transition-all flex items-center justify-center gap-2">
-                <i class="fa-solid fa-user-secret"></i> INSTANT DIRECT GUEST ACCESS
+            <button onclick="window.instantiateFastGuestTerminal()" class="w-full py-4 bg-[#111827] hover:bg-[#1F2937] text-slate-300 border border-[#1E2942] font-black text-xs rounded-xl tracking-widest flex items-center justify-center gap-2 transition-colors">
+                <i class="fa-solid fa-bolt text-amber-400"></i> FAST DIRECT GUEST RUN
             </button>
         </div>
 
-        <div id="coreApplicationLayout" class="flex-1 flex flex-col hidden">
+        <div id="premiumRuntimeCoreShell" class="flex-1 flex flex-col hidden">
             
-            <div class="p-4 bg-[#111726] border-b border-slate-800/80 sticky top-0 z-50">
+            <div class="p-4 bg-[#0B101D] border-b border-[#1E2942] sticky top-0 z-50 space-y-4">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="rainbow-container px-3 py-1 rounded-lg border border-white/10 shadow">
-                            <span class="text-xs font-black text-white tracking-wider">TAMPA</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full border border-blue-500/30 bg-[#111726] flex items-center justify-center text-blue-400 text-sm font-black shadow-inner">
+                            <i class="fa-solid fa-user-astronaut"></i>
                         </div>
-                        <div class="text-left">
-                            <div id="uidDisplay" class="text-[10px] font-mono text-slate-400 font-bold tracking-wide">UID: ----------</div>
-                            <div id="lastLoginDisplay" class="text-[8px] font-mono text-slate-500">LL: ----/--/--</div>
+                        <div>
+                            <div id="runtimeUIDDisplayLabel" class="text-xs font-mono font-black text-slate-200">UID: ----------</div>
+                            <div id="runtimeLastLoginDisplay" class="text-[9px] font-mono text-slate-500">LAST SYNC: ----/--/-- --:--</div>
                         </div>
                     </div>
 
-                    <select onchange="window.executeLanguageRotation(this.value)" class="text-[10px] bg-[#161D30] text-slate-300 border border-slate-700 rounded-md p-1 font-bold outline-none">
+                    <select onchange="window.switchTerminalLanguageMapping(this.value)" class="text-[10px] bg-[#111726] text-slate-300 border border-[#1E2942] rounded-lg p-2 font-black outline-none tracking-wider">
                         <option value="en">English (EN)</option>
                         <option value="ar">العربية (AR)</option>
                         <option value="ur">اردو (UR)</option>
                     </select>
                 </div>
 
-                <div class="mt-4 bg-[#161D30] rounded-xl border border-slate-700/60 p-3 flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 text-xs font-black">
+                <div class="premium-card rounded-2xl p-4 flex items-center justify-between shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-600/5 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/20 to-yellow-600/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xs font-black">
                             .د.ب
                         </div>
                         <div>
-                            <span data-localize="wallet_title" class="text-[9px] text-slate-400 font-bold block uppercase tracking-wider">Available Node Balance</span>
+                            <span data-lang-key="balance_title" class="text-[9px] text-slate-400 font-bold block uppercase tracking-widest">Available Liquidity Node</span>
                             <div class="flex items-baseline gap-1">
-                                <span id="globalBalance" class="text-lg font-mono font-black text-white">0.00</span>
-                                <span class="text-[9px] font-bold text-amber-500">BHD</span>
+                                <span id="runtimeGlobalLedgerBalance" class="text-xl font-mono font-black text-white tracking-tight">0.00</span>
+                                <span class="text-[10px] font-black text-amber-500">BHD</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-1.5">
-                        <button onclick="window.synchronizeCloudMetrics()" class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 active:scale-95 transition-transform">
-                            <i id="syncSpinner" class="fa-solid fa-arrows-rotate text-xs"></i>
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.triggerManualCloudSync()" class="w-8 h-8 rounded-xl bg-[#1A2338] border border-[#243254] flex items-center justify-center text-slate-300 active:scale-95 transition-transform">
+                            <i id="cloudSyncIconRef" class="fa-solid fa-rotate text-xs"></i>
                         </button>
-                        <button onclick="window.navigateDashboardRoute(4)" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black rounded-lg shadow-sm flex items-center gap-1">
-                            <i class="fa-solid fa-circle-plus"></i> <span data-localize="dep_btn">DEPOSIT</span>
+                        <button onclick="window.switchRouteViewContext(3)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black rounded-xl tracking-wider shadow-md flex items-center gap-1.5 transition-transform active:scale-95">
+                            <i class="fa-solid fa-wallet"></i> <span data-lang-key="dep_btn">DEPOSIT</span>
                         </button>
-                        <button onclick="window.navigateDashboardRoute(4)" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black rounded-lg shadow-sm flex items-center gap-1">
-                            <i class="fa-solid fa-money-bill-transfer"></i> <span data-localize="wit_btn">WITHDRAW</span>
+                        <button onclick="window.switchRouteViewContext(3)" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black rounded-xl tracking-wider shadow-md flex items-center gap-1.5 transition-transform active:scale-95">
+                            <i class="fa-solid fa-money-bill-transfer"></i> <span data-lang-key="wit_btn">WITHDRAW</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div id="scrollViewport" class="p-4 flex-1 overflow-y-auto space-y-4 pb-12">
+            <div id="runtimeScrollArea" class="p-4 flex-1 overflow-y-auto space-y-4 pb-16">
                 
-                <div id="panelTab1" class="dashboard-panel space-y-4">
+                <div id="viewModuleTab_1" class="view-panel-module space-y-4">
                     
-                    <div class="grid grid-cols-3 gap-2">
-                        <button id="clockSelectorButton_25" onclick="window.pivotTimerEngineContext(25)" class="p-2.5 text-center rounded-xl font-mono font-black text-xs transition-all app-panel-box border-blue-500 text-white">
-                            <div>25 Sec</div>
-                            <div id="selectorTimerLabel_25" class="text-[10px] text-blue-400">00s</div>
+                    <div class="grid grid-cols-3 gap-2 p-1 bg-[#0C1220] rounded-xl border border-[#1A2338]">
+                        <button id="intervalBtn_25" onclick="window.modifyTimeIntervalDomain(25)" class="py-2.5 text-center rounded-lg font-mono font-black text-xs transition-all bg-[#151D30] border border-blue-500/50 text-white">
+                            <div>25 SEC</div>
+                            <div id="intervalLabel_25" class="text-[10px] text-blue-400 font-bold">00s</div>
                         </button>
-                        <button id="clockSelectorButton_50" onclick="window.pivotTimerEngineContext(50)" class="p-2.5 text-center rounded-xl font-mono font-black text-xs transition-all app-panel-box text-slate-400">
-                            <div>50 Sec</div>
-                            <div id="selectorTimerLabel_50" class="text-[10px] text-slate-500">00s</div>
+                        <button id="intervalBtn_50" onclick="window.modifyTimeIntervalDomain(50)" class="py-2.5 text-center rounded-lg font-mono font-black text-xs transition-all text-slate-400">
+                            <div>50 SEC</div>
+                            <div id="intervalLabel_50" class="text-[10px] text-slate-500 font-bold">00s</div>
                         </button>
-                        <button id="clockSelectorButton_120" onclick="window.pivotTimerEngineContext(120)" class="p-2.5 text-center rounded-xl font-mono font-black text-xs transition-all app-panel-box text-slate-400">
-                            <div>2 Min</div>
-                            <div id="selectorTimerLabel_120" class="text-[10px] text-slate-500">00s</div>
+                        <button id="intervalBtn_120" onclick="window.modifyTimeIntervalDomain(120)" class="py-2.5 text-center rounded-lg font-mono font-black text-xs transition-all text-slate-400">
+                            <div>2 MIN</div>
+                            <div id="intervalLabel_120" class="text-[10px] text-slate-500 font-bold">00s</div>
                         </button>
                     </div>
 
-                    <div id="gameShellContainer_BigSmall" class="app-panel-box p-4 rounded-2xl space-y-4 relative overflow-hidden">
-                        <div class="flex justify-between items-center">
+                    <div id="subContainer_GameBigSmall" class="premium-card p-4 rounded-2xl space-y-4 relative overflow-hidden">
+                        <div class="flex justify-between items-start">
                             <div>
-                                <span class="text-[8px] bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-black tracking-wider uppercase">Continuous Loop</span>
-                                <h3 class="text-sm font-black text-slate-100 mt-1">BIG VS SMALL MATRIX</h3>
+                                <span class="text-[8px] bg-blue-500/10 border border-blue-500/30 text-blue-400 px-2 py-0.5 rounded font-black tracking-widest uppercase">System Pool Alpha</span>
+                                <h3 class="text-sm font-black text-slate-100 tracking-wide mt-1">BIG VS SMALL RUNTIME</h3>
                             </div>
-                            <div class="text-right">
-                                <span data-localize="rem_time" class="text-[9px] text-slate-400 block font-bold uppercase">Time Remaining</span>
-                                <span id="liveActiveCountdownText" class="text-xl font-mono font-black text-amber-500">00s</span>
+                            <div class="text-right bg-[#0C1220] px-3 py-1.5 rounded-xl border border-[#1A2338]">
+                                <span data-lang-key="rem_time" class="text-[8px] text-slate-400 block font-black uppercase tracking-wider">Remaining Clock</span>
+                                <span id="globalCountdownClockView" class="text-xl font-mono font-black text-amber-500 tracking-tight">00s</span>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-xs text-center">
-                            <div class="p-1 bg-slate-900/60 rounded border border-slate-800/40">Big Pool: <span id="livePoolMetric_Big" class="font-bold text-blue-400">0.00</span></div>
-                            <div class="p-1 bg-slate-900/60 rounded border border-slate-800/40">Small Pool: <span id="livePoolMetric_Small" class="font-bold text-indigo-400">0.00</span></div>
+                        <div class="grid grid-cols-2 gap-2 inner-inset-box p-3 rounded-xl font-mono text-[11px]">
+                            <div class="text-center p-1.5 bg-[#111726]/60 rounded border border-[#1E2942]">TOTAL BIG: <span id="livePoolMetrics_Big" class="font-black text-cyan-400">0.00 BHD</span></div>
+                            <div class="text-center p-1.5 bg-[#111726]/60 rounded border border-[#1E2942]">TOTAL SMALL: <span id="livePoolMetrics_Small" class="font-black text-indigo-400">0.00 BHD</span></div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <button onclick="window.openBettingModal('Big')" class="py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white text-xs font-black rounded-xl tracking-wider uppercase shadow-md shadow-blue-900/20">
+                            <button onclick="window.initiateBetOverlayValidation('Big')" class="py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-black rounded-xl tracking-widest uppercase shadow-md active:scale-95 transition-transform">
                                 STAKE BIG (5-9)
                             </button>
-                            <button onclick="window.openBettingModal('Small')" class="py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-black rounded-xl tracking-wider uppercase shadow-md shadow-indigo-900/20">
+                            <button onclick="window.initiateBetOverlayValidation('Small')" class="py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-black rounded-xl tracking-widest uppercase shadow-md active:scale-95 transition-transform">
                                 STAKE SMALL (0-4)
                             </button>
                         </div>
                     </div>
 
-                    <div id="gameShellContainer_Balloons" class="app-panel-box p-4 rounded-2xl space-y-4 relative overflow-hidden hidden">
-                        <div class="flex justify-between items-center">
+                    <div id="subContainer_GameBalloons" class="premium-card p-4 rounded-2xl space-y-4 relative overflow-hidden hidden">
+                        <div class="flex justify-between items-start">
                             <div>
-                                <span class="text-[8px] bg-rose-500/10 border border-rose-500/20 text-rose-400 px-2 py-0.5 rounded font-black tracking-wider uppercase">Continuous Loop</span>
-                                <h3 class="text-sm font-black text-slate-100 mt-1">BALLOONS BOMB ARENA</h3>
+                                <span class="text-[8px] bg-rose-500/10 border border-rose-500/30 text-rose-400 px-2 py-0.5 rounded font-black tracking-widest uppercase">System Pool Beta</span>
+                                <h3 class="text-sm font-black text-slate-100 tracking-wide mt-1">BALLOONS CRASH DEFLATION</h3>
                             </div>
-                            <div class="text-right">
-                                <span class="text-[9px] text-slate-400 block font-bold uppercase">Blast Lock</span>
-                                <span id="liveActiveCountdownText_Balloons" class="text-xl font-mono font-black text-rose-500">00s</span>
+                            <div class="text-right bg-[#0C1220] px-3 py-1.5 rounded-xl border border-[#1A2338]">
+                                <span class="text-[8px] text-slate-400 block font-black uppercase tracking-wider">Fuse Length</span>
+                                <span id="globalCountdownClockView_Balloons" class="text-xl font-mono font-black text-rose-500 tracking-tight">00s</span>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 py-2">
-                            <div onclick="window.openBettingModal('BalloonA')" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center cursor-pointer active:scale-95 transition-transform flex flex-col items-center">
-                                <i class="fa-solid fa-circle text-sky-500 text-3xl drop-shadow-[0_0_10px_rgba(14,165,233,0.3)] animate-pulse"></i>
-                                <span class="text-xs font-black mt-1 text-slate-200">Sky Balloon A</span>
-                                <span id="livePoolMetric_BalloonA" class="text-[10px] text-slate-400 font-mono mt-0.5">0.00 BHD</span>
+                            <div id="balloonEntityNode_A" onclick="window.initiateBetOverlayValidation('BalloonA')" class="inner-inset-box p-4 rounded-xl text-center cursor-pointer active:scale-95 transition-transform flex flex-col items-center gap-2">
+                                <i class="fa-solid fa-lightbulb text-cyan-400 text-3xl drop-shadow-[0_0_15px_rgba(34,211,238,0.4)]"></i>
+                                <span class="text-xs font-black text-slate-200">Cyan Cluster A</span>
+                                <span id="livePoolMetrics_BalloonA" class="text-[10px] font-mono text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800">0.00 BHD</span>
                             </div>
-                            <div onclick="window.openBettingModal('BalloonB')" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center cursor-pointer active:scale-95 transition-transform flex flex-col items-center">
-                                <i class="fa-solid fa-circle text-rose-500 text-3xl drop-shadow-[0_0_10px_rgba(244,63,94,0.3)] animate-pulse"></i>
-                                <span class="text-xs font-black mt-1 text-slate-200">Rose Balloon B</span>
-                                <span id="livePoolMetric_BalloonB" class="text-[10px] text-slate-400 font-mono mt-0.5">0.00 BHD</span>
+                            <div id="balloonEntityNode_B" onclick="window.initiateBetOverlayValidation('BalloonB')" class="inner-inset-box p-4 rounded-xl text-center cursor-pointer active:scale-95 transition-transform flex flex-col items-center gap-2">
+                                <i class="fa-solid fa-lightbulb text-rose-500 text-3xl drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]"></i>
+                                <span class="text-xs font-black text-slate-200">Rose Cluster B</span>
+                                <span id="livePoolMetrics_BalloonB" class="text-[10px] font-mono text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800">0.00 BHD</span>
                             </div>
                         </div>
                     </div>
 
-                    <div id="gameShellContainer_Spin" class="app-panel-box p-4 rounded-2xl space-y-4 relative overflow-hidden hidden">
-                        <div class="flex justify-between items-center">
+                    <div id="subContainer_GameSpin" class="premium-card p-4 rounded-2xl space-y-4 relative overflow-hidden hidden">
+                        <div class="flex justify-between items-start">
                             <div>
-                                <span class="text-[8px] bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded font-black tracking-wider uppercase">Continuous Loop</span>
-                                <h3 class="text-sm font-black text-slate-100 mt-1">SPIN TUNNEL WHEEL</h3>
+                                <span class="text-[8px] bg-purple-500/10 border border-purple-500/30 text-purple-400 px-2 py-0.5 rounded font-black tracking-widest uppercase">System Pool Gamma</span>
+                                <h3 class="text-sm font-black text-slate-100 tracking-wide mt-1">SPIN TUNNEL ENGINE</h3>
                             </div>
-                            <div class="text-right">
-                                <span class="text-[9px] text-slate-400 block font-bold uppercase">Rotation Clock</span>
-                                <span id="liveActiveCountdownText_Spin" class="text-xl font-mono font-black text-purple-500">00s</span>
+                            <div class="text-right bg-[#0C1220] px-3 py-1.5 rounded-xl border border-[#1A2338]">
+                                <span class="text-[8px] text-slate-400 block font-black uppercase tracking-wider">Brake Apply</span>
+                                <span id="globalCountdownClockView_Spin" class="text-xl font-mono font-black text-purple-500 tracking-tight">00s</span>
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-center py-4 bg-slate-950 rounded-xl border border-slate-800">
-                            <div id="wheelGraphicNode" class="w-16 h-16 rounded-full border-4 border-dashed border-indigo-500 flex items-center justify-center text-lg transition-all duration-1000 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-                                <i class="fa-solid fa-compass text-indigo-400 animate-spin"></i>
+                        <div class="flex flex-col items-center justify-center p-6 inner-inset-box rounded-xl border border-dashed border-slate-700">
+                            <div id="spinningGraphicTargetNode" class="w-20 h-20 rounded-full border-4 border-dashed border-blue-500 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-transform duration-1000">
+                                <i class="fa-solid fa-circle-dot text-indigo-400"></i>
+                            </div>
+                            <div class="mt-3 flex gap-4 text-[10px] font-black">
+                                <span class="text-blue-400"><i class="fa-solid fa-square mr-1"></i> BLUE SIDE (LOW)</span>
+                                <span class="text-slate-200"><i class="fa-solid fa-square mr-1"></i> WHITE SIDE (HIGH)</span>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <button onclick="window.openBettingModal('SpinBlue')" class="py-2.5 bg-blue-600 text-white text-xs font-black rounded-xl">BACK BLUE</button>
-                            <button onclick="window.openBettingModal('SpinWhite')" class="py-2.5 bg-slate-200 text-slate-950 text-xs font-black rounded-xl">BACK WHITE</button>
+                            <button onclick="window.initiateBetOverlayValidation('SpinBlue')" class="py-3 bg-blue-600 text-white text-xs font-black rounded-xl tracking-wider uppercase">BACK BLUE NODE</button>
+                            <button onclick="window.initiateBetOverlayValidation('SpinWhite')" class="py-3 bg-slate-200 text-slate-950 text-xs font-black rounded-xl tracking-wider uppercase">BACK WHITE NODE</button>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-1.5 pt-1">
-                        <button onclick="window.toggleActiveGameSection('BigSmall')" class="py-2 bg-blue-600 text-white text-[10px] font-black rounded-lg uppercase tracking-wider">Big/Small</button>
-                        <button onclick="window.toggleActiveGameSection('Balloons')" class="py-2 bg-slate-800 text-slate-300 text-[10px] font-black rounded-lg uppercase tracking-wider">Balloons</button>
-                        <button onclick="window.toggleActiveGameSection('Spin')" class="py-2 bg-slate-800 text-slate-300 text-[10px] font-black rounded-lg uppercase tracking-wider">Spin Wheel</button>
+                    <div class="grid grid-cols-3 gap-2 pt-1">
+                        <button onclick="window.rotateActiveGameplayShell('BigSmall')" class="py-2.5 bg-blue-600 text-white text-[10px] font-black rounded-xl uppercase tracking-wider shadow">Big/Small</button>
+                        <button onclick="window.rotateActiveGameplayShell('Balloons')" class="py-2.5 bg-[#111726] text-slate-300 text-[10px] font-black rounded-xl uppercase tracking-wider border border-slate-800">Balloons Bomb</button>
+                        <button onclick="window.rotateActiveGameplayShell('Spin')" class="py-2.5 bg-[#111726] text-slate-300 text-[10px] font-black rounded-xl uppercase tracking-wider border border-slate-800">Spin Tunnel</button>
                     </div>
 
-                    <div class="app-panel-box p-4 rounded-2xl space-y-3">
+                    <div class="premium-card p-4 rounded-2xl space-y-3">
                         <div class="flex justify-between items-center">
-                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider">Period Analysis Ledger</h4>
-                            <span class="text-[9px] font-mono text-slate-500">Last 10 Batches</span>
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Chronology Period Logs</h4>
+                            <span class="text-[9px] font-mono text-slate-500 font-bold">RECENT 10 DATASETS</span>
                         </div>
-                        <div id="periodHistoryLogsContainer" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                        <div id="liveBatchChronologyViewGrid" class="space-y-2 max-h-48 overflow-y-auto pr-1">
                             </div>
                     </div>
                 </div>
 
-                <div id="panelTab2" class="dashboard-panel space-y-4 hidden">
-                    <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">Referral Network Node</h3>
+                <div id="viewModuleTab_2" class="view-panel-module space-y-4 hidden">
+                    <h3 class="text-sm font-black text-slate-200 uppercase tracking-widest">Multi-Tier Network Structure</h3>
                     
-                    <div class="app-panel-box p-4 rounded-2xl space-y-3">
-                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-center space-y-1">
-                            <span class="text-[10px] text-slate-500 block uppercase font-bold tracking-wider">My Absolute Network Access Key</span>
-                            <span id="referralCodeBoxDisplay" class="text-xl font-mono font-black text-blue-400 tracking-widest">-----</span>
+                    <div class="premium-card p-4 rounded-2xl space-y-4">
+                        <div class="inner-inset-box p-4 rounded-xl text-center space-y-1">
+                            <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-widest">My Referral Signature Link Key</span>
+                            <span id="displayNodeReferralString" class="text-2xl font-mono font-black text-blue-400 tracking-widest">-----</span>
                         </div>
 
-                        <div class="grid grid-cols-3 gap-2 text-center pt-1">
-                            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800">
+                        <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+                            <div class="inner-inset-box p-3 rounded-xl">
                                 <span class="text-[8px] text-slate-400 font-bold block uppercase">Level 1 (Direct)</span>
-                                <span id="refCountLevel1" class="text-sm font-mono font-black text-white">0</span>
-                                <span class="text-[8px] text-emerald-400 block mt-0.5">+1% Dep</span>
+                                <span id="networkCount_L1" class="text-base font-black text-white block mt-1">0</span>
+                                <span class="text-[9px] text-emerald-400 font-bold block mt-0.5">+1% Dep Bonus</span>
                             </div>
-                            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                                <span class="text-[8px] text-slate-400 font-bold block uppercase">Level 2 (Tier)</span>
-                                <span id="refCountLevel2" class="text-sm font-mono font-black text-white">0</span>
-                                <span class="text-[8px] text-blue-400 block mt-0.5">+2% Ply</span>
+                            <div class="inner-inset-box p-3 rounded-xl">
+                                <span class="text-[8px] text-slate-400 font-bold block uppercase">Level 2 (Indirect)</span>
+                                <span id="networkCount_L2" class="text-base font-black text-white block mt-1">0</span>
+                                <span class="text-[9px] text-cyan-400 font-bold block mt-0.5">+2% Bet Bonus</span>
                             </div>
-                            <div class="bg-slate-950 p-2 rounded-xl border border-slate-800">
+                            <div class="inner-inset-box p-3 rounded-xl">
                                 <span class="text-[8px] text-slate-400 font-bold block uppercase">Level 3 (Sub)</span>
-                                <span id="refCountLevel3" class="text-sm font-mono font-black text-white">0</span>
-                                <span class="text-[8px] text-purple-400 block mt-0.5">Passive</span>
+                                <span id="networkCount_L3" class="text-base font-black text-white block mt-1">0</span>
+                                <span class="text-[9px] text-purple-400 font-bold block mt-0.5">Passive Pool</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="panelTab3" class="dashboard-panel space-y-4 hidden">
-                    <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">Liquidity Accounting Module</h3>
+                <div id="viewModuleTab_3" class="view-panel-module space-y-4 hidden">
+                    <h3 class="text-sm font-black text-slate-200 uppercase tracking-widest">Financial Gateway Router</h3>
                     
-                    <div class="app-panel-box p-4 rounded-2xl space-y-3">
-                        <h4 class="text-xs font-black text-slate-300 uppercase">Instantiation Pool Funding Engine</h4>
-                        <div class="space-y-2">
-                            <input type="number" id="depositVolumeField" placeholder="Amount to Fund (BHD)" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono">
-                            <div class="grid grid-cols-2 gap-2 text-center">
-                                <button onclick="window.selectFundingProtocolGateway('Gateway_A')" id="proto_Gateway_A" class="p-2 text-[11px] font-bold rounded-lg border border-blue-500 bg-blue-500/10 text-white">Automatic Node API</button>
-                                <button onclick="window.selectFundingProtocolGateway('Gateway_B')" id="proto_Gateway_B" class="p-2 text-[11px] font-bold rounded-lg border border-slate-800 bg-slate-900 text-slate-400">Manual Gateway Wire</button>
+                    <div class="premium-card p-4 rounded-2xl space-y-3">
+                        <h4 class="text-xs font-black text-slate-300 uppercase tracking-wider">Allocation Deposit Node</h4>
+                        <div class="space-y-3">
+                            <input type="number" id="inputDepositAmountValue" placeholder="Volume Magnitude (BHD)" class="w-full px-4 py-3 inner-inset-box rounded-xl text-sm text-white focus:outline-none focus:border-blue-500 font-mono">
+                            <div class="grid grid-cols-2 gap-2 text-center text-[11px] font-bold">
+                                <button onclick="window.toggleSelectedFundingWay('API')" id="fundMethod_API" class="p-2.5 rounded-lg border border-blue-500 bg-blue-500/10 text-white">Instant Tap Settlement</button>
+                                <button onclick="window.toggleSelectedFundingWay('WIRE')" id="fundMethod_WIRE" class="p-2.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400">Manual Transfer Mesh</button>
                             </div>
-                            <button onclick="window.executeDepositAllocationPipeline()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl">Execute Secure Funding Route</button>
+                            <button onclick="window.processExternalFundingRequestPipeline()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl tracking-widest uppercase transition-colors">Confirm Allocation Load</button>
                         </div>
                     </div>
 
-                    <div class="app-panel-box p-4 rounded-2xl space-y-3">
+                    <div class="premium-card p-4 rounded-2xl space-y-3">
                         <div class="flex justify-between items-center">
-                            <h4 class="text-xs font-black text-rose-400 uppercase">Isolated Audit Settlement Module</h4>
-                            <span class="text-[8px] bg-rose-500/10 border border-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded font-mono font-bold">Pending Lock Activated</span>
+                            <h4 class="text-xs font-black text-rose-400 uppercase tracking-wider">Isolated Settlement Release</h4>
+                            <span class="text-[9px] bg-rose-500/10 border border-rose-500/30 text-rose-400 px-2 py-0.5 rounded font-mono font-bold">Isolation Security Active</span>
                         </div>
-                        <div class="space-y-2">
-                            <input type="number" id="withdrawVolumeField" placeholder="Volume Magnitude (BHD)" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono">
-                            <select id="withdrawalTargetProtocol" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none">
-                                <option value="PayPal Node Integration">PayPal Corporate Clearing API</option>
-                                <option value="Stripe Protocol Wire">Stripe Balance Router String</option>
+                        <div class="space-y-3">
+                            <input type="number" id="inputWithdrawalAmountValue" placeholder="Volume Magnitude (BHD)" class="w-full px-4 py-3 inner-inset-box rounded-xl text-sm text-white focus:outline-none focus:border-blue-500 font-mono">
+                            <select id="selectWithdrawalGatewayProtocol" class="w-full px-4 py-3 inner-inset-box rounded-xl text-xs text-white font-bold focus:outline-none">
+                                <option value="PayPal Node Pipeline">PayPal International Corporate API</option>
+                                <option value="Stripe Protocol Mesh">Stripe Balance Router String</option>
                             </select>
-                            <input type="text" id="withdrawalDestinationDetails" placeholder="Target Destination String / Account Identifier" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono">
-                            <button onclick="window.executeWithdrawalIsolationLoop()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl">Instantiate Liquidity Settlement Loop</button>
+                            <input type="text" id="inputWithdrawalDestinationString" placeholder="Target Routing Key / Wallet Destination ID" class="w-full px-4 py-3 inner-inset-box rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono">
+                            <button onclick="window.processIsolatedSettlementRequestPipeline()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl tracking-widest uppercase transition-colors">Initialize Settlement Release</button>
                         </div>
                     </div>
 
-                    <div class="app-panel-box p-4 rounded-2xl space-y-2">
-                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider">Settlement Request Manifest Logs</h4>
-                        <div id="withdrawalManifestLogsArea" class="space-y-1 font-mono text-[10px]">
+                    <div class="premium-card p-4 rounded-2xl space-y-2">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Settlement Manifest Chronology</h4>
+                        <div id="withdrawalManifestRenderZone" class="space-y-2 font-mono text-[11px]">
                             </div>
                     </div>
                 </div>
 
-                <div id="superAdminMasterHub" class="dashboard-panel space-y-4 hidden">
+                <div id="viewModuleTab_SuperAdmin" class="view-panel-module space-y-4 hidden">
                     <div class="flex items-center gap-2 text-rose-400 border-b border-slate-800 pb-2">
-                        <i class="fa-solid fa-crown text-sm animate-pulse"></i>
-                        <h3 class="text-xs font-black uppercase tracking-wider">Super Admin Master Management Interface</h3>
+                        <i class="fa-solid fa-mask text-base animate-bounce"></i>
+                        <h3 class="text-xs font-black uppercase tracking-widest">Centralized Super Admin Matrix Dashboard</h3>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 text-center font-mono text-[10px]">
-                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                            <span class="text-slate-500 block">Total Active Nodes</span>
-                            <span class="text-sm font-black text-white">200 Members</span>
+                    <div class="grid grid-cols-2 gap-3 text-center font-mono text-xs">
+                        <div class="inner-inset-box p-3 rounded-xl">
+                            <span class="text-slate-500 block text-[10px]">Net Network Scale</span>
+                            <span class="text-sm font-black text-white">200 Members Active</span>
                         </div>
-                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                            <span class="text-slate-500 block">Net Commission (3%)</span>
-                            <span id="adminHouseProfits" class="text-sm font-black text-emerald-400">0.00 BHD</span>
+                        <div class="inner-inset-box p-3 rounded-xl">
+                            <span class="text-slate-500 block text-[10px]">House Net Edge Profit (3%)</span>
+                            <span id="adminDisplayHouseProfitsSum" class="text-sm font-black text-emerald-400">0.00 BHD</span>
                         </div>
                     </div>
 
-                    <div class="app-panel-box p-3 rounded-xl space-y-2">
-                        <label class="text-[10px] font-bold text-slate-400 block uppercase">Algorithmic Target Parameter Overrides</label>
-                        <select id="adminFormulaBehaviorSelect" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none">
-                            <option value="Anti_Drain">Default Strategy: Anti-Drain (Least Bets Amount Wins Always)</option>
-                            <option value="Force_Big_Win">Force Matrix Override: Enforce BIG/BALLOON_A Outright Win</option>
-                            <option value="Force_Small_Win">Force Matrix Override: Enforce SMALL/BALLOON_B Outright Win</option>
+                    <div class="premium-card p-4 rounded-xl space-y-3">
+                        <label class="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Algorithmic Strategy Directives Controller</label>
+                        <select id="adminStrategicAlgorithmStateSelect" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-bold focus:outline-none">
+                            <option value="Anti_Drain">Anti-Drain Mode: (Least Pool Volume Always Wins Automatically)</option>
+                            <option value="Force_High_Win">Force Overrides: Target BIG / BALLOON_A Outright Vector Win</option>
+                            <option value="Force_Low_Win">Force Overrides: Target SMALL / BALLOON_B Outright Vector Win</option>
                         </select>
-                        <button onclick="window.saveAdminAlgorithmicDirectives()" class="w-full py-2 bg-rose-700 text-white text-xs font-black rounded-lg">COMMIT FORMULA CHANGES</button>
+                        <button onclick="window.commitAdminStrategicRulesOverrides()" class="w-full py-2.5 bg-rose-700 text-white text-xs font-black rounded-xl tracking-wider uppercase shadow">Save Strategy Directives</button>
                     </div>
 
-                    <div class="app-panel-box p-3 rounded-xl space-y-2">
-                        <label class="text-[10px] font-bold text-slate-400 block uppercase">Central UID Profile Directory Lookup & Ban Tools</label>
+                    <div class="premium-card p-4 rounded-xl space-y-3">
+                        <label class="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Account Node Lookup & Isolation Directory</label>
                         <div class="flex gap-2">
-                            <input type="text" id="adminTargetUIDField" placeholder="Enter 10-Digit Player UID String" class="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none font-mono">
-                            <button onclick="window.executeAdminUIDProfileScanning()" class="bg-rose-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg">SCAN NODE</button>
+                            <input type="text" id="adminAccountQueryUIDField" placeholder="10-Digit Account UID String" class="flex-1 px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono focus:outline-none">
+                            <button onclick="window.executeAdminAccountDeepScan()" class="bg-rose-900 text-white text-xs font-black px-4 py-2 rounded-lg">SCAN PROFILE</button>
                         </div>
-                        <div id="adminProfileDataDisplayBlock" class="hidden text-[11px] bg-slate-950 p-2 rounded-lg font-mono text-slate-400 border border-slate-800 space-y-1.5"></div>
+                        <div id="adminQueryResultDisplayArea" class="hidden text-xs bg-slate-950 p-3 rounded-xl font-mono text-slate-400 border border-slate-900 space-y-2"></div>
                     </div>
                 </div>
 
             </div>
 
-            <div class="bg-slate-900/90 border-t border-slate-800 px-4 py-2 absolute bottom-12 w-full flex items-center justify-between text-xs">
-                <span class="text-[10px] text-slate-400 font-bold uppercase"><i class="fa-solid fa-headset mr-1"></i> Customer Care Telegram Node:</span>
-                <a href="https://t.me/rihu2020" target="_blank" class="text-blue-400 font-mono font-bold hover:underline">@rihu2020</a>
+            <div class="bg-slate-900/90 border-t border-[#1E2942] px-4 py-2.5 absolute bottom-12 w-full flex items-center justify-between text-xs z-40">
+                <span class="text-[10px] text-slate-400 font-bold uppercase"><i class="fa-solid fa-headset mr-1 text-blue-400"></i> Customer Support Desk:</span>
+                <a href="https://t.me/rihu2020" target="_blank" class="text-blue-400 font-mono font-black hover:underline tracking-wide">@rihu2020</a>
             </div>
 
-            <div id="appFooterStickBar" class="bg-[#111726] border-t border-slate-800/80 p-1.5 fixed bottom-0 phone-frame w-full z-50 flex justify-around">
-                <button id="footerNavNode_1" onclick="window.navigateDashboardRoute(1)" class="flex flex-col items-center gap-0.5 text-blue-500 py-1 px-3 rounded-xl transition-colors"><i class="fa-solid fa-gamepad text-base"></i><span data-localize="nav_games" class="text-[9px] font-black uppercase">Games</span></button>
-                <button id="footerNavNode_2" onclick="window.navigateDashboardRoute(2)" class="flex flex-col items-center gap-0.5 text-slate-500 py-1 px-3 rounded-xl transition-colors"><i class="fa-solid fa-network-wired text-base"></i><span data-localize="nav_refer" class="text-[9px] font-black uppercase">Refer</span></button>
-                <button id="footerNavNode_3" onclick="window.navigateDashboardRoute(3)" class="flex flex-col items-center gap-0.5 text-slate-500 py-1 px-3 rounded-xl transition-colors"><i class="fa-solid fa-wallet text-base"></i><span data-localize="nav_wallet" class="text-[9px] font-black uppercase">Wallet</span></button>
-                <button id="footerNavNode_4" onclick="window.navigateDashboardRoute(4)" class="flex flex-col items-center gap-0.5 text-slate-500 py-1 px-3 rounded-xl transition-colors"><i class="fa-solid fa-gears text-base"></i><span id="adminNavLabel" class="text-[9px] font-black uppercase">System</span></button>
+            <div id="applicationFooterStickyNavbar" class="bg-[#0B101D] border-t border-[#1E2942] p-1 fixed bottom-0 phone-container w-full z-50 flex justify-around shadow-2xl">
+                <button id="navControlItem_1" onclick="window.switchRouteViewContext(1)" class="flex flex-col items-center gap-0.5 text-blue-500 py-1.5 px-4 rounded-xl transition-all"><i class="fa-solid fa-gamepad text-base"></i><span data-lang-key="nav_games" class="text-[9px] font-black uppercase tracking-wider">Games</span></button>
+                <button id="navControlItem_2" onclick="window.switchRouteViewContext(2)" class="flex flex-col items-center gap-0.5 text-slate-500 py-1.5 px-4 rounded-xl transition-all"><i class="fa-solid fa-network-wired text-base"></i><span data-lang-key="nav_refer" class="text-[9px] font-black uppercase tracking-wider">Refer Network</span></button>
+                <button id="navControlItem_3" onclick="window.switchRouteViewContext(3)" class="flex flex-col items-center gap-0.5 text-slate-500 py-1.5 px-4 rounded-xl transition-all"><i class="fa-solid fa-wallet text-base"></i><span data-lang-key="nav_wallet" class="text-[9px] font-black uppercase tracking-wider">Wallet Route</span></button>
+                <button id="navControlItem_4" onclick="window.switchRouteViewContext(4)" class="flex flex-col items-center gap-0.5 text-slate-500 py-1.5 px-4 rounded-xl transition-all"><i class="fa-solid fa-sliders text-base"></i><span id="runtimeFooterSystemLabelText" class="text-[9px] font-black uppercase tracking-wider">System Setup</span></button>
             </div>
 
         </div>
 
-        <div id="bettingActionModalOverlay" class="fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4 hidden">
-            <div class="bg-[#161D30] border border-slate-700 rounded-2xl p-5 w-full max-w-xs space-y-4 shadow-2xl">
+        <div id="transactionBetPlacementConfirmationModal" class="fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4 hidden">
+            <div class="bg-[#151D30] border border-[#243254] rounded-2xl p-5 w-full max-w-xs space-y-4 shadow-2xl animate-fade-in">
                 <div class="text-center">
-                    <span class="text-[9px] text-slate-400 font-bold block uppercase tracking-wider">Stake Registration Validation</span>
-                    <h4 class="text-sm font-black text-white mt-1">PLACEMENT TARGET: <span id="modalTargetLabelString" class="text-blue-400 font-mono">None</span></h4>
+                    <span class="text-[9px] text-slate-400 font-bold block uppercase tracking-widest">Stake Registration Security</span>
+                    <h4 class="text-sm font-black text-white mt-1">TARGET ALLOCATION: <span id="modalDisplayTargetVectorString" class="text-cyan-400 font-mono">None</span></h4>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[10px] text-slate-400 block font-bold uppercase">Volume Magnitude (BHD)</label>
-                    <input type="number" id="modalInputBetMagnitude" placeholder="Enter Bid Quantity" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white font-mono text-center focus:outline-none focus:border-blue-500">
+                    <label class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Stake Amount (BHD)</label>
+                    <input type="number" id="modalInputTargetStakeValue" placeholder="Enter BHD Magnitude" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white font-mono text-center focus:outline-none focus:border-blue-500">
                 </div>
-                <div class="grid grid-cols-2 gap-2 pt-1">
-                    <button onclick="window.closeBettingModalPipeline()" class="py-2 bg-slate-800 text-slate-300 text-xs font-bold rounded-xl">CANCEL</button>
-                    <button onclick="window.executeBetPlacementTransaction()" class="py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-black rounded-xl">CONFIRM BET</button>
+                <div class="grid grid-cols-2 gap-2 pt-1 text-xs font-bold">
+                    <button onclick="window.closeBetPlacementValidationOverlay()" class="py-2.5 bg-slate-800 text-slate-300 rounded-xl uppercase">DISMISS</button>
+                    <button onclick="window.commitStakeTransactionToActivePool()" class="py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-xl uppercase tracking-wider">PLACE BET</button>
                 </div>
             </div>
         </div>
@@ -396,7 +426,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Official Firebase Configuration Matrix
         const firebaseConfig = {
             apiKey: "AIzaSyALq0NOUj6diw8GUWa0Zd541scVStbYAo8",
             authDomain: "tampa-67659.firebaseapp.com",
@@ -410,378 +439,396 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Core Operational Node State Variables
-        let activeUserSession = null;
-        let isSignUpViewMode = false;
-        let activeSystemLanguage = 'en';
-        let currentTimerIntervalBounds = 25; 
-        let currentActiveGameSection = 'BigSmall'; 
-        let pendingTargetStakeSelectionKey = null;
+        // State System Vectors Memory Cache
+        let userProfileSessionObject = null;
+        let authUIRegistrationModeActive = false;
+        let globalSelectedLanguageIsoCode = 'en';
+        let currentTimeScopeDomainBounds = 25; 
+        let currentActiveGameLayoutViewKey = 'BigSmall';
+        let pendingSelectionTargetKey = null;
         let currentSystemStrategyMode = 'Anti_Drain'; 
 
-        // Memory Arrays simulating persistent clock counters across 24h cycle
-        let clockCountersMap = { 25: 25, 50: 50, 120: 120 };
-        let liveStakePoolsData = {
+        // Cross-Runtime Multi-Timer Framework Registers (24-Hours Non-Stop Loops)
+        let backgroundTimerMap = { 25: 25, 50: 50, 120: 120 };
+        let activePoolsStakeWeights = {
             Big: 0.0, Small: 0.0, BalloonA: 0.0, BalloonB: 0.0, SpinBlue: 0.0, SpinWhite: 0.0
         };
-        let globalPeriodChronologyList = [];
-        let globalWithdrawalManifestRecords = [];
+        let runtimePeriodChronologyList = [];
+        let runtimeIsolatedWithdrawalManifestArray = [];
 
-        // Dynamic Language Locales Translation Dictionary Box
-        const localizationMapBox = {
-            en: { wallet_title: "Available Node Balance", dep_btn: "DEPOSIT", wit_btn: "WITHDRAW", rem_time: "Time Remaining", nav_games: "Games", nav_refer: "Refer", nav_wallet: "Wallet" },
-            ar: { wallet_title: "رصيد العقدة المتاح", dep_btn: "إيداع", wit_btn: "سحب", rem_time: "الوقت المتبقي", nav_games: "ألعاب", nav_refer: "إحالة", nav_wallet: "محفظة" },
-            ur: { wallet_title: "دستیاب والٹ بیلنس", dep_btn: "ڈپازٹ", wit_btn: "ودڈرا", rem_time: "باقی وقت", nav_games: "کھیل", nav_refer: "ریفرل", nav_wallet: "والٹ" }
+        // UI Translation Multilingual Dictionary Dictionaries Map
+        const multiLanguageTranslationMatrix = {
+            en: { balance_title: "Available Liquidity Node", dep_btn: "DEPOSIT", wit_btn: "WITHDRAW", rem_time: "Remaining Clock", nav_games: "Games", nav_refer: "Refer Network", nav_wallet: "Wallet Route" },
+            ar: { balance_title: "رصيد السيولة المتاح", dep_btn: "إيداع", wit_btn: "سحب النقود", rem_time: "الوقت المتبقي", nav_games: "الألعاب", nav_refer: "شبكة الإحالة", nav_wallet: "مسار المحفظة" },
+            ur: { balance_title: "دستیاب مائع بیلنس", dep_btn: "ڈپازٹ فنڈز", wit_btn: "رقم نکالیں", rem_time: "باقی وقت کلاک", nav_games: "کھیل ہی کھیل", nav_refer: "ریفرل نیٹ ورک", nav_wallet: "والٹ اکاؤنٹ" }
         };
 
-        // ==================== AUTHENTICATION SECURITY LAYER ====================
-        window.toggleAuthMode = function() {
-            isSignUpViewMode = !isSignUpViewMode;
-            document.getElementById('signUpOnlyFields').classList.toggle('hidden', !isSignUpViewMode);
-            document.getElementById('authBtnLabel').innerText = isSignUpViewMode ? "REGISTER NEW TERMINAL NODE" : "AUTHENTICATE SYSTEM";
-            document.getElementById('authModeToggler').innerText = isSignUpViewMode ? "Already verified? Access existing node" : "New Here? Create 5-Digit Node Account";
+        // ==================== SYSTEM AUTH INTERFACE MANAGEMENT MODULES ====================
+        window.switchAuthGateModule = function() {
+            authUIRegistrationModeActive = !authUIRegistrationModeActive;
+            document.getElementById('registrationExtendedFields').classList.toggle('hidden', !authUIRegistrationModeActive);
+            document.getElementById('authSubmitActionText').innerText = authUIRegistrationModeActive ? "REGISTER NEW DATA PROFILE" : "INITIALIZE TERMINAL SECURE ACCESS";
+            document.getElementById('authViewModuleToggleBtn').innerText = authUIRegistrationModeActive ? "Already verified? Connect existing terminal" : "New User registration? Open 5-Digit Node Engine";
         };
 
-        window.processSystemAuthentication = function() {
-            const phone = document.getElementById('authPhone').value.trim();
-            const pass = document.getElementById('authPass').value.trim();
+        window.processAccessVerificationPipeline = function() {
+            const phoneNumberString = document.getElementById('inputNodePhone').value.trim();
+            const passwordString = document.getElementById('inputNodePass').value.trim();
 
-            if (!phone || !pass) { alert("Credentials parameters missing."); return; }
+            if (!phoneNumberString || !passwordString) { alert("Security exception: Fields cannot be blank."); return; }
 
-            // Super Admin Entry Hook Access Verification
-            if (phone === "8709913752") {
-                executeSuperAdminModeTransition();
+            // Super Admin Hook Validation Trigger Context
+            if (phoneNumberString === "8709913752") {
+                launchSuperAdminTerminalInterface();
                 return;
             }
 
-            const cleanUID = "TP" + Math.floor(10000000 + Math.random() * 90000000);
-            const selfRefCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-            const timestampString = new Date().toISOString().substring(0, 10);
+            const mockGeneratedUID = "TP" + Math.floor(20000000 + Math.random() * 79999999);
+            const personalizedRefCode = Math.random().toString(36).substring(2, 6).toUpperCase() + Math.floor(Math.random() * 9);
+            const formattedCurrentDateTime = new Date().toLocaleString();
 
-            if (isSignUpViewMode) {
-                const confPass = document.getElementById('authConfirmPass').value.trim();
-                if (pass !== confPass) { alert("Key token confirmation mismatch."); return; }
+            if (authUIRegistrationModeActive) {
+                const confPass = document.getElementById('inputNodeConfirmPass').value.trim();
+                if (passwordString !== confPass) { alert("Validation error: Password tokens fields mismatch."); return; }
                 
-                activeUserSession = {
-                    uid: cleanUID, phone: phone, pass: pass, referralCode: selfRefCode,
-                    balance: 200.00, pendingLockAmount: 0.0, isBanned: false,
-                    lastLogin: timestampString, invitedByCode: document.getElementById('authRefCode').value.trim()
+                userProfileSessionObject = {
+                    uid: mockGeneratedUID, phone: phoneNumberString, pass: passwordString, referralCode: personalizedRefCode,
+                    balance: 150.00, isolatedLockBalance: 0.0, isBanned: false,
+                    lastLogin: formattedCurrentDateTime, invitedByCodeRef: document.getElementById('inputNodeReferralCode').value.trim()
                 };
-                saveAndSynchronizeSessionNode(activeUserSession);
+                synchronizeAccountNodeToDashboardFrame(userProfileSessionObject);
             } else {
-                // Fetch User Session Logic Simulation 
-                activeUserSession = {
-                    uid: "TP" + Math.floor(10000000 + Math.random() * 90000000), phone: phone, pass: pass,
-                    referralCode: selfRefCode, balance: 350.50, pendingLockAmount: 0.0, isBanned: false, lastLogin: timestampString
+                userProfileSessionObject = {
+                    uid: "TP" + Math.floor(45000000 + Math.random() * 45000000), phone: phoneNumberString, pass: passwordString,
+                    referralCode: personalizedRefCode, balance: 480.75, isolatedLockBalance: 0.0, isBanned: false, lastLogin: formattedCurrentDateTime
                 };
-                saveAndSynchronizeSessionNode(activeUserSession);
+                synchronizeAccountNodeToDashboardFrame(userProfileSessionObject);
             }
         };
 
-        window.instantiateGuestSession = function() {
-            const guestUID = "GST" + Math.floor(10000000 + Math.random() * 90000000);
-            const today = new Date().toISOString().substring(0, 10);
-            activeUserSession = {
-                uid: guestUID, phone: "Guest Mode Node", referralCode: "GUEST",
-                balance: 100.00, pendingLockAmount: 0.0, isBanned: false, lastLogin: today
+        window.instantiateFastGuestTerminal = function() {
+            const guestUIDString = "GST" + Math.floor(10000000 + Math.random() * 89999999);
+            const timestampNow = new Date().toLocaleString();
+            userProfileSessionObject = {
+                uid: guestUIDString, phone: "Direct Guest Node Session", referralCode: "GSTX",
+                balance: 50.00, isolatedLockBalance: 0.0, isBanned: false, lastLogin: timestampNow
             };
-            saveAndSynchronizeSessionNode(activeUserSession);
+            synchronizeAccountNodeToDashboardFrame(userProfileSessionObject);
         };
 
-        function saveAndSynchronizeSessionNode(userObj) {
+        function synchronizeAccountNodeToDashboardFrame(accountObj) {
             try {
-                set(ref(db, 'tampa_production_nodes/' + userObj.uid), userObj);
-            } catch (e) { console.warn("Firebase offline handling automated."); }
+                set(ref(db, 'tampa_production_nodes/' + accountObj.uid), accountObj);
+            } catch (err) { console.log("Firebase sync decoupled - fallback tracking loop local runtime online."); }
 
-            document.getElementById('uidDisplay').innerText = "UID: " + userObj.uid;
-            document.getElementById('lastLoginDisplay').innerText = "LL: " + userObj.lastLogin;
-            document.getElementById('referralCodeBoxDisplay').innerText = userObj.referralCode;
+            document.getElementById('runtimeUIDDisplayLabel').innerText = "UID: " + accountObj.uid;
+            document.getElementById('runtimeLastLoginDisplay').innerText = "LAST SYNC: " + accountObj.lastLogin;
+            document.getElementById('displayNodeReferralString').innerText = accountObj.referralCode;
             
-            document.getElementById('authGateScreen').classList.add('hidden');
-            document.getElementById('coreApplicationLayout').classList.remove('hidden');
+            document.getElementById('authTerminalGate').classList.add('hidden');
+            document.getElementById('premiumRuntimeCoreShell').classList.remove('hidden');
             
-            updateUIMetrics();
-            seedPeriodChronologySimulation();
-            window.navigateDashboardRoute(1);
+            refreshGlobalLedgerDisplayMetrics();
+            populateMockInitialPeriodLogs();
+            window.switchRouteViewContext(1);
         }
 
-        function executeSuperAdminModeTransition() {
-            alert("Super Admin Node Authorized. Launching Central Control Shell.");
-            activeUserSession = { uid: "MASTER_ADMIN", phone: "8709913752", balance: 99999.9, referralCode: "ADMIN", lastLogin: "REALTIME" };
-            document.getElementById('authGateScreen').classList.add('hidden');
-            document.getElementById('coreApplicationLayout').classList.remove('hidden');
-            document.getElementById('adminNavLabel').innerText = "ADMIN PANEL";
-            window.navigateDashboardRoute(4); 
+        function launchSuperAdminTerminalInterface() {
+            alert("Master Terminal Verified. Injecting Root Modules Access Controls.");
+            userProfileSessionObject = { uid: "MASTER_ROOT_ADMIN", phone: "8709913752", balance: 9999.00, referralCode: "ROOT", lastLogin: "REALTIME MESH" };
+            document.getElementById('authTerminalGate').classList.add('hidden');
+            document.getElementById('premiumRuntimeCoreShell').classList.remove('hidden');
+            document.getElementById('runtimeFooterSystemLabelText').innerText = "ADMIN CONTROL";
+            window.switchRouteViewContext(4); 
         }
 
-        // ==================== DASHBOARDS SWITCHING & NAVIGATION ====================
-        window.navigateDashboardRoute = function(targetIndex) {
-            document.querySelectorAll('.dashboard-panel').forEach(p => p.classList.add('hidden'));
+        // ==================== ROUTE NAVIGATION DISPATCHERS ====================
+        window.switchRouteViewContext = function(tabIndexId) {
+            document.querySelectorAll('.view-panel-module').forEach(panel => panel.classList.add('hidden'));
             
-            if (targetIndex === 4 && activeUserSession.uid === "MASTER_ADMIN") {
-                document.getElementById('superAdminMasterHub').classList.remove('hidden');
-            } else if (targetIndex === 4) {
-                // Default fallback for regular player to prevent empty screens
-                document.getElementById('panelTab3').classList.remove('hidden'); 
-                targetIndex = 3;
+            if (tabIndexId === 4 && userProfileSessionObject.uid === "MASTER_ROOT_ADMIN") {
+                document.getElementById('viewModuleTab_SuperAdmin').classList.remove('hidden');
+            } else if (tabIndexId === 4) {
+                document.getElementById('viewModuleTab_3').classList.remove('hidden'); 
+                tabIndexId = 3;
             } else {
-                document.getElementById('panelTab' + targetIndex).classList.remove('hidden');
+                document.getElementById('viewModuleTab_' + tabIndexId).classList.remove('hidden');
             }
 
             for (let i = 1; i <= 4; i++) {
-                const el = document.getElementById('footerNavNode_' + i);
-                if (el) { el.classList.remove('text-blue-500'); el.classList.add('text-slate-500'); }
+                const navBtnRef = document.getElementById('navControlItem_' + i);
+                if (navBtnRef) { navBtnRef.classList.remove('text-blue-500'); navBtnRef.classList.add('text-slate-500'); }
             }
-            const activeNavNode = document.getElementById('footerNavNode_' + targetIndex);
-            if (activeNavNode) activeNavNode.classList.add('text-blue-500');
+            const currentSelectedNavRef = document.getElementById('navControlItem_' + tabIndexId);
+            if (currentSelectedNavRef) currentSelectedNavRef.classList.add('text-blue-500');
         };
 
-        window.toggleActiveGameSection = function(gameSectionKey) {
-            currentActiveGameSection = gameSectionKey;
-            document.getElementById('gameShellContainer_BigSmall').classList.add('hidden');
-            document.getElementById('gameShellContainer_Balloons').classList.add('hidden');
-            document.getElementById('gameShellContainer_Spin').classList.add('hidden');
+        window.rotateActiveGameplayShell = function(targetGameKey) {
+            currentActiveGameLayoutViewKey = targetGameKey;
+            document.getElementById('subContainer_GameBigSmall').classList.add('hidden');
+            document.getElementById('subContainer_GameBalloons').classList.add('hidden');
+            document.getElementById('subContainer_GameSpin').classList.add('hidden');
 
-            document.getElementById('gameShellContainer_' + gameSectionKey).classList.remove('hidden');
+            document.getElementById('subContainer_Game' + targetGameKey).classList.remove('hidden');
         };
 
-        window.pivotTimerEngineContext = function(secondsBoundValue) {
-            currentTimerIntervalBounds = secondsBoundValue;
-            for (let b of [25, 50, 120]) {
-                const btn = document.getElementById('clockSelectorButton_' + b);
-                btn.classList.remove('border-blue-500', 'text-white');
-                btn.classList.add('text-slate-400');
+        window.modifyTimeIntervalDomain = function(selectedSecondsBoundsValue) {
+            currentTimeScopeDomainBounds = selectedSecondsBoundsValue;
+            for (let bound of [25, 50, 120]) {
+                const elementBtn = document.getElementById('intervalBtn_' + bound);
+                elementBtn.classList.remove('border', 'border-blue-500/50', 'text-white', 'bg-[#151D30]');
+                elementBtn.classList.add('text-slate-400');
             }
-            document.getElementById('clockSelectorButton_' + secondsBoundValue).classList.add('border-blue-500', 'text-white');
+            const activeBtn = document.getElementById('intervalBtn_' + selectedSecondsBoundsValue);
+            activeBtn.classList.add('border', 'border-blue-500/50', 'text-white', 'bg-[#151D30]');
         };
 
-        // ==================== REALTIME BETTING OPERATIONS ====================
-        window.openBettingModal = function(targetSelection) {
-            const currentLoopCountdownValue = clockCountersMap[currentTimerIntervalBounds];
-            if (currentLoopCountdownValue <= 3) {
-                alert("Betting Lockout active. Processing current cycle updates.");
+        // ==================== TRANSACTIONAL STAKING INTERFACES ====================
+        window.initiateBetOverlayValidation = function(targetKey) {
+            const dynamicLoopScopeCountdownValue = backgroundTimerMap[currentTimeScopeDomainBounds];
+            if (dynamicLoopScopeCountdownValue <= 3) {
+                alert("Lock Period Active: Staking windows closed for current cycle evaluations.");
                 return;
             }
-            pendingTargetStakeSelectionKey = targetSelection;
-            document.getElementById('modalTargetLabelString').innerText = targetSelection.toUpperCase();
-            document.getElementById('bettingActionModalOverlay').classList.remove('hidden');
+            pendingSelectionTargetKey = targetKey;
+            document.getElementById('modalDisplayTargetVectorString').innerText = targetKey.toUpperCase();
+            document.getElementById('transactionBetPlacementConfirmationModal').classList.remove('hidden');
         };
 
-        window.closeBettingModalPipeline = function() {
-            document.getElementById('bettingActionModalOverlay').classList.add('hidden');
-            document.getElementById('modalInputBetMagnitude').value = "";
+        window.closeBetPlacementValidationOverlay = function() {
+            document.getElementById('transactionBetPlacementConfirmationModal').classList.add('hidden');
+            document.getElementById('modalInputTargetStakeValue').value = "";
         };
 
-        window.executeBetPlacementTransaction = function() {
-            const magnitude = parseFloat(document.getElementById('modalInputBetMagnitude').value);
-            if (isNaN(magnitude) || magnitude <= 0) { alert("Invalid allocation boundaries."); return; }
-            if (activeUserSession.balance < magnitude) { alert("Insufficient BHD Liquidity balance."); return; }
+        window.commitStakeTransactionToActivePool = function() {
+            const stakeQuantityAmount = parseFloat(document.getElementById('modalInputTargetStakeValue').value);
+            if (isNaN(stakeQuantityAmount) || stakeQuantityAmount <= 0) { alert("Staking rules error: Quantity boundaries out of scope."); return; }
+            if (userProfileSessionObject.balance < stakeQuantityAmount) { alert("Transaction declined: Insufficient account BHD balance."); return; }
 
-            activeUserSession.balance -= magnitude;
-            liveStakePoolsData[pendingTargetStakeSelectionKey] += magnitude;
+            userProfileSessionObject.balance -= stakeQuantityAmount;
+            activePoolsStakeWeights[pendingSelectionTargetKey] += stakeQuantityAmount;
 
-            updateUIMetrics();
-            alert("Bet registered successfully in continuum framework.");
-            window.closeBettingModalPipeline();
+            // Adding interactive physics popping engine layer properties on selection trigger
+            if(pendingSelectionTargetKey === 'BalloonA') {
+                document.getElementById('balloonEntityNode_A').classList.add('scale-105', 'border-cyan-500');
+                setTimeout(() => document.getElementById('balloonEntityNode_A').classList.remove('scale-105', 'border-cyan-500'), 200);
+            } else if (pendingSelectionTargetKey === 'BalloonB') {
+                document.getElementById('balloonEntityNode_B').classList.add('scale-105', 'border-rose-500');
+                setTimeout(() => document.getElementById('balloonEntityNode_B').classList.remove('scale-105', 'border-rose-500'), 200);
+            }
+
+            refreshGlobalLedgerDisplayMetrics();
+            alert("Stake registration logged inside live execution memory.");
+            window.closeBetPlacementValidationOverlay();
         };
 
-        // ==================== ENGINE CORE: TICK SYNC LOOP (24 HOURS) ====================
+        // ==================== SYSTEM CORE CLOCK LOOPS DISTRIBUTOR (24 HOURS) ====================
         setInterval(() => {
-            // Processing decrement structures for all loop states
-            for (let bound of [25, 50, 120]) {
-                clockCountersMap[bound] = clockCountersMap[bound] <= 1 ? bound : clockCountersMap[bound] - 1;
+            for (let timeframeBound iteration of [25, 50, 120]) {
+                backgroundTimerMap[timeframeBound] = backgroundTimerMap[timeframeBound] <= 1 ? timeframeBound : backgroundTimerMap[timeframeBound] - 1;
                 
-                // Realtime syncing elements display blocks
-                const label = document.getElementById('selectorTimerLabel_' + bound);
-                if (label) label.innerText = clockCountersMap[bound] + "s";
+                const indicatorTextLabelRef = document.getElementById('intervalLabel_' + timeframeBound);
+                if (indicatorTextLabelRef) indicatorTextLabelRef.innerText = backgroundTimerMap[timeframeBound] + "s";
             }
 
-            // Sync countdown string to active viewport display block 
-            const activeCounterVal = clockCountersMap[currentTimerIntervalBounds];
-            document.getElementById('liveActiveCountdownText').innerText = activeCounterVal + "s";
-            document.getElementById('liveActiveCountdownText_Balloons').innerText = activeCounterVal + "s";
-            document.getElementById('liveActiveCountdownText_Spin').innerText = activeCounterVal + "s";
+            // Continuous clock view variables updates synchronization
+            const trackingLiveTickValue = backgroundTimerMap[currentTimeScopeDomainBounds];
+            document.getElementById('globalCountdownClockView').innerText = trackingLiveTickValue + "s";
+            document.getElementById('globalCountdownClockView_Balloons').innerText = trackingLiveTickValue + "s";
+            document.getElementById('globalCountdownClockView_Spin').innerText = trackingLiveTickValue + "s";
 
-            // Visual Wheel asset rotating handler engine simulation
-            if (currentActiveGameSection === 'Spin' && activeCounterVal > 3) {
-                document.getElementById('wheelGraphicNode').style.transform = `rotate(${Date.now() / 8 % 360}deg)`;
+            // Structural graphical animation properties transformations rules sets
+            if (currentActiveGameLayoutViewKey === 'Spin' && trackingLiveTickValue > 2) {
+                document.getElementById('spinningGraphicTargetNode').style.transform = `rotate(${Date.now() / 4 % 360}deg)`;
             }
 
-            // Evaluate cycle outcome metrics upon clock terminal intersection zero
-            if (activeCounterVal === 1) {
-                evaluateAlgorithmicGameOutcomes();
+            // Evaluate core outcome algorithm triggers exactly on expiration boundary intersection
+            if (trackingLiveTickValue === 1) {
+                processAlgorithmicMathematicalOutcomeResolution();
             }
 
-            // Update local dashboard structural layouts elements text values
-            document.getElementById('livePoolMetric_Big').innerText = liveStakePoolsData.Big.toFixed(2);
-            document.getElementById('livePoolMetric_Small').innerText = liveStakePoolsData.Small.toFixed(2);
-            document.getElementById('livePoolMetric_BalloonA').innerText = liveStakePoolsData.BalloonA.toFixed(2) + " BHD";
-            document.getElementById('livePoolMetric_BalloonB').innerText = liveStakePoolsData.BalloonB.toFixed(2) + " BHD";
+            // Real-time text element interface synchronization updates
+            document.getElementById('livePoolMetrics_Big').innerText = activePoolsStakeWeights.Big.toFixed(2) + " BHD";
+            document.getElementById('livePoolMetrics_Small').innerText = activePoolsStakeWeights.Small.toFixed(2) + " BHD";
         }, 1000);
 
-        // ==================== MATHEMATICAL FORMULA EXECUTION ====================
-        function evaluateAlgorithmicGameOutcomes() {
-            let winTokenKey = "";
-            let generatedLuckyDigit = Math.floor(Math.random() * 5); // 0-4 Small, 5-9 Big alternate bounds
+        // ==================== ALGORITHMIC OUTCOME FORMULA EVALUATORS ====================
+        function processAlgorithmicMathematicalOutcomeResolution() {
+            let winningVectorTokenKey = "";
+            let computedLuckyDigitMarkerValue = Math.floor(Math.random() * 5); // 0-4 Small, 5-9 Big rules constraints
 
-            if (currentActiveGameSection === 'BigSmall') {
+            if (currentActiveGameLayoutViewKey === 'BigSmall') {
                 if (currentSystemStrategyMode === 'Anti_Drain') {
-                    winTokenKey = (liveStakePoolsData.Big <= liveStakePoolsData.Small) ? "Big" : "Small";
+                    winningVectorTokenKey = (activePoolsStakeWeights.Big <= activePoolsStakeWeights.Small) ? "Big" : "Small";
                 } else {
-                    winTokenKey = currentSystemStrategyMode === 'Force_Big_Win' ? "Big" : "Small";
+                    winningVectorTokenKey = currentSystemStrategyMode === 'Force_High_Win' ? "Big" : "Small";
                 }
-                generatedLuckyDigit = (winTokenKey === "Big") ? Math.floor(5 + Math.random() * 5) : Math.floor(Math.random() * 5);
-            } else if (currentActiveGameSection === 'Balloons') {
-                winTokenKey = (liveStakePoolsData.BalloonA <= liveStakePoolsData.BalloonB) ? "BalloonA" : "BalloonB";
+                computedLuckyDigitMarkerValue = (winningVectorTokenKey === "Big") ? Math.floor(5 + Math.random() * 5) : Math.floor(Math.random() * 5);
+            } else if (currentActiveGameLayoutViewKey === 'Balloons') {
+                winningVectorTokenKey = (activePoolsStakeWeights.BalloonA <= activePoolsStakeWeights.BalloonB) ? "BalloonA" : "BalloonB";
+                // Animation loop handler hooks execution routines
+                if(winningVectorTokenKey === 'BalloonA') {
+                    document.getElementById('balloonEntityNode_B').classList.add('pop-active');
+                    setTimeout(() => document.getElementById('balloonEntityNode_B').classList.remove('pop-active'), 1500);
+                } else {
+                    document.getElementById('balloonEntityNode_A').classList.add('pop-active');
+                    setTimeout(() => document.getElementById('balloonEntityNode_A').classList.remove('pop-active'), 1500);
+                }
             } else {
-                winTokenKey = (liveStakePoolsData.SpinBlue <= liveStakePoolsData.SpinWhite) ? "SpinBlue" : "SpinWhite";
+                winningVectorTokenKey = (activePoolsStakeWeights.SpinBlue <= activePoolsStakeWeights.SpinWhite) ? "SpinBlue" : "SpinWhite";
+                const staticStopDegreeAngle = winningVectorTokenKey === 'SpinBlue' ? 120 : 300;
+                document.getElementById('spinningGraphicTargetNode').style.transform = `rotate(${staticStopDegreeAngle}deg)`;
             }
 
-            // Evaluation outcome alert banner triggering animation routines
-            const randomBatchID = "PD" + Math.floor(100000 + Math.random() * 900000);
-            const playerMatchedBetValue = liveStakePoolsData[winTokenKey];
+            const uniqueBatchPeriodIDString = "PRD" + Math.floor(500000 + Math.random() * 499999);
+            const userStakedVolumeWeightValue = activePoolsStakeWeights[winningVectorTokenKey];
 
-            if (playerMatchedBetValue > 0) {
-                // Winner logic mapping: Double Payout minus 3% house platform cut fees
-                const structuralNetCredits = (playerMatchedBetValue * 2.00) * 0.97;
-                activeUserSession.balance += structuralNetCredits;
-                alert(`🏆 OUTCOME SUCCESS\nPeriod: ${randomBatchID}\nResult Vector: ${winTokenKey.toUpperCase()} (Digit: ${generatedLuckyDigit})\nNet Credited: +${structuralNetCredits.toFixed(2)} BHD`);
-                pushChronologyLogItem(randomBatchID, winTokenKey, generatedLuckyDigit, 'green');
+            if (userStakedVolumeWeightValue > 0) {
+                // Return multiplier calculation: Double Return Pool minus 3% house platform margin fees commission cut
+                const netCreditedProfitAllocationVolume = (userStakedVolumeWeightValue * 2.00) * 0.97;
+                userProfileSessionObject.balance += netCreditedProfitAllocationVolume;
+                
+                alert(`🏆 PERIOD SUCCESSFUL WINNER\nBatch: ${uniqueBatchPeriodIDString}\nVector Result: ${winningVectorTokenKey.toUpperCase()}\nNet Earn Payout: +${netCreditedProfitAllocationVolume.toFixed(2)} BHD`);
+                appendDatasetItemToPeriodChronologyLogs(uniqueBatchPeriodIDString, winningVectorTokenKey, computedLuckyDigitMarkerValue, 'green');
             } else {
-                alert(`❌ CYCLE CONCLUDED\nResult Vector: ${winTokenKey.toUpperCase()} (Digit: ${generatedLuckyDigit})\nStatus: Luck is Bad / Try Again`);
-                pushChronologyLogItem(randomBatchID, winTokenKey, generatedLuckyDigit, 'red');
+                alert(`❌ PERIOD CONCLUDED\nVector Result: ${winningVectorTokenKey.toUpperCase()}\nStatus: Luck is Bad / Red Indicator Applied`);
+                appendDatasetItemToPeriodChronologyLogs(uniqueBatchPeriodIDString, winningVectorTokenKey, computedLuckyDigitMarkerValue, 'red');
             }
 
-            // Clear operational arrays memory loops for upcoming rotation period
-            liveStakePoolsData = { Big: 0.0, Small: 0.0, BalloonA: 0.0, BalloonB: 0.0, SpinBlue: 0.0, SpinWhite: 0.0 };
-            updateUIMetrics();
+            // Flash reset metrics weights memory buffers arrays 
+            activePoolsStakeWeights = { Big: 0.0, Small: 0.0, BalloonA: 0.0, BalloonB: 0.0, SpinBlue: 0.0, SpinWhite: 0.0 };
+            refreshGlobalLedgerDisplayMetrics();
         }
 
-        function pushChronologyLogItem(periodID, resolvedKey, luckyDigit, visualThemeKey) {
-            globalPeriodChronologyList.unshift({ id: periodID, vector: resolvedKey, digit: luckyDigit, color: visualThemeKey });
-            if (globalPeriodChronologyList.length > 10) globalPeriodChronologyList.pop();
+        function appendDatasetItemToPeriodChronologyLogs(periodID, resolvedKey, luckyDigit, visualThemeKey) {
+            runtimePeriodChronologyList.unshift({ id: periodID, vector: resolvedKey, digit: luckyDigit, color: visualThemeKey });
+            if (runtimePeriodChronologyList.length > 10) runtimePeriodChronologyList.pop();
 
-            const container = document.getElementById('periodHistoryLogsContainer');
-            container.innerHTML = "";
-            globalPeriodChronologyList.forEach(item => {
-                const textCol = item.color === 'green' ? 'text-emerald-400' : 'text-rose-400';
-                container.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-950 p-2 rounded border border-slate-800 text-[11px] font-mono">
-                        <span class="text-slate-400">${item.id}</span>
-                        <span class="font-bold uppercase ${textCol}">${item.vector}</span>
-                        <span class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-slate-300 font-bold">${item.digit}</span>
+            const targetViewContainerRef = document.getElementById('liveBatchChronologyViewGrid');
+            targetViewContainerRef.innerHTML = "";
+            runtimePeriodChronologyList.forEach(item => {
+                const indicatorTextThemeStyleClass = item.color === 'green' ? 'text-emerald-400 font-black' : 'text-rose-500 font-bold';
+                const badgeThemeBackgroundStyleClass = item.color === 'green' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400';
+                
+                targetViewContainerRef.innerHTML += `
+                    <div class="flex justify-between items-center bg-[#0C1220] p-2.5 rounded-xl border border-[#1A2338] text-xs font-mono">
+                        <span class="text-slate-400 font-bold">${item.id}</span>
+                        <span class="uppercase tracking-wider ${indicatorTextThemeStyleClass}">${item.vector}</span>
+                        <span class="px-2.5 py-0.5 rounded border text-[10px] font-black ${badgeThemeBackgroundStyleClass}">${item.digit}</span>
                     </div>
                 `;
             });
         }
 
-        function seedPeriodChronologySimulation() {
-            for (let i = 0; i < 5; i++) {
-                const mockID = "PD" + Math.floor(123400 + i * 45);
-                const mockVector = Math.random() > 0.5 ? "Big" : "Small";
-                const mockDigit = mockVector === "Big" ? Math.floor(5 + Math.random() * 5) : Math.floor(Math.random() * 5);
-                pushChronologyLogItem(mockID, mockVector, mockDigit, 'green');
+        function populateMockInitialPeriodLogs() {
+            for (let i = 0; i < 4; i++) {
+                const generatedMockID = "PRD" + Math.floor(823100 + i * 21);
+                const generatedMockVector = Math.random() > 0.5 ? "Big" : "Small";
+                const generatedMockDigit = generatedMockVector === "Big" ? Math.floor(6 + Math.random() * 3) : Math.floor(Math.random() * 4);
+                appendDatasetItemToPeriodChronologyLogs(generatedMockID, generatedMockVector, generatedMockDigit, 'green');
             }
         }
 
-        // ==================== WALLET FUNDING / DEPOSIT ROUTINES ====================
-        window.selectFundingProtocolGateway = function(gatewayID) {
-            document.getElementById('proto_Gateway_A').className = "p-2 text-[11px] font-bold rounded-lg border " + (gatewayID === 'Gateway_A' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-slate-800 bg-slate-900 text-slate-400');
-            document.getElementById('proto_Gateway_B').className = "p-2 text-[11px] font-bold rounded-lg border " + (gatewayID === 'Gateway_B' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-slate-800 bg-slate-900 text-slate-400');
+        // ==================== CASH ROUTING DEPOSITS & WITHDRAWAL PIPELINES ====================
+        window.toggleSelectedFundingWay = function(protocolCodeKey) {
+            document.getElementById('fundMethod_API').className = "p-2.5 rounded-lg border " + (protocolCodeKey === 'API' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-slate-800 bg-slate-900 text-slate-400');
+            document.getElementById('fundMethod_WIRE').className = "p-2.5 rounded-lg border " + (protocolCodeKey === 'WIRE' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-slate-800 bg-slate-900 text-slate-400');
         };
 
-        window.executeDepositAllocationPipeline = function() {
-            const amt = parseFloat(document.getElementById('depositVolumeField').value);
-            if (isNaN(amt) || amt <= 0) { alert("Enter valid BHD asset quantity."); return; }
+        window.processExternalFundingRequestPipeline = function() {
+            const fundingQuantityAmount = parseFloat(document.getElementById('inputDepositAmountValue').value);
+            if (isNaN(fundingQuantityAmount) || fundingQuantityAmount <= 0) { alert("Validation failed: Target amount missing."); return; }
             
-            activeUserSession.balance += amt;
-            updateUIMetrics();
-            alert(`Funding transaction complete. Instantly verified +${amt.toFixed(2)} BHD to user node.`);
-            document.getElementById('depositVolumeField').value = "";
+            userProfileSessionObject.balance += fundingQuantityAmount;
+            refreshGlobalLedgerDisplayMetrics();
+            alert(`Funding success node verification: Credited +${fundingQuantityAmount.toFixed(2)} BHD successfully.`);
+            document.getElementById('inputDepositAmountValue').value = "";
         };
 
-        window.executeWithdrawalIsolationLoop = function() {
-            const amt = parseFloat(document.getElementById('withdrawVolumeField').value);
-            const protoStr = document.getElementById('withdrawalTargetProtocol').value;
-            const destDetails = document.getElementById('withdrawalDestinationDetails').value.trim();
+        window.processIsolatedSettlementRequestPipeline = function() {
+            const pullAmountMagnitude = parseFloat(document.getElementById('inputWithdrawalAmountValue').value);
+            const selectedProtocolString = document.getElementById('selectWithdrawalGatewayProtocol').value;
+            const absoluteDestinationString = document.getElementById('inputWithdrawalDestinationString').value.trim();
 
-            if (isNaN(amt) || amt <= 0 || !destDetails) { alert("Complete target allocation specifications string forms."); return; }
-            if (activeUserSession.balance < amt) { alert("Insufficient available ledger balance."); return; }
+            if (isNaN(pullAmountMagnitude) || pullAmountMagnitude <= 0 || !absoluteDestinationString) { alert("Incomplete input variables keys data strings."); return; }
+            if (userProfileSessionObject.balance < pullAmountMagnitude) { alert("Declined security action: Capital weight mismatch limits."); return; }
 
-            activeUserSession.balance -= amt;
-            activeUserSession.pendingLockAmount += amt;
-            updateUIMetrics();
+            userProfileSessionObject.balance -= pullAmountMagnitude;
+            userProfileSessionObject.isolatedLockBalance += pullAmountMagnitude;
+            refreshGlobalLedgerDisplayMetrics();
 
-            const refLogUID = "WIT" + Math.floor(10000 + Math.random() * 90000);
-            globalWithdrawalManifestRecords.unshift({ id: refLogUID, volume: amt, status: 'Pending Audit Sync', method: protoStr });
+            const referenceTrackingUIDKey = "WTR" + Math.floor(20000 + Math.random() * 79999);
+            runtimeIsolatedWithdrawalManifestArray.unshift({ id: referenceTrackingUIDKey, magnitude: pullAmountMagnitude, status: 'Pending Admin Audit Sync', systemRoute: selectedProtocolString });
             
-            // Re-render Settlement Request Log Manifest list
-            const container = document.getElementById('withdrawalManifestLogsArea');
-            container.innerHTML = "";
-            globalWithdrawalManifestRecords.forEach(item => {
-                container.innerHTML += `
-                    <div class="p-2 bg-slate-950 border border-slate-800 rounded mb-1 flex justify-between">
+            const targetRenderAreaNode = document.getElementById('withdrawalManifestRenderZone');
+            targetRenderAreaNode.innerHTML = "";
+            runtimeIsolatedWithdrawalManifestArray.forEach(item => {
+                targetRenderAreaNode.innerHTML += `
+                    <div class="p-3 bg-slate-950 border border-slate-900 rounded-xl mb-1 flex justify-between items-center animate-fade-in">
                         <div>
-                            <span class="text-slate-400 block font-bold">${item.id} (${item.method})</span>
-                            <span class="text-amber-500 text-[9px] font-bold"><i class="fa-solid fa-clock animate-pulse mr-0.5"></i> ${item.status}</span>
+                            <span class="text-slate-300 block font-bold text-[12px]">${item.id}</span>
+                            <span class="text-slate-500 text-[9px] block mt-0.5">${item.systemRoute}</span>
+                            <span class="text-amber-500 text-[10px] font-black block mt-1"><i class="fa-solid fa-hourglass-start animate-spin mr-1"></i>${item.status}</span>
                         </div>
-                        <span class="font-bold text-rose-400">-${item.volume.toFixed(2)} BHD</span>
+                        <span class="font-black text-rose-500 text-sm">-${item.magnitude.toFixed(2)} BHD</span>
                     </div>
                 `;
             });
 
-            alert(`Withdrawal Locked & Isolated.\nAmount: ${amt} BHD forwarded to Admin review nodes safely.`);
-            document.getElementById('withdrawVolumeField').value = "";
-            document.getElementById('withdrawalDestinationDetails').value = "";
+            alert(`Settlement request isolated inside memory node router safely.\nMagnitude: ${pullAmountMagnitude} BHD locked for central authorization clearance.`);
+            document.getElementById('inputWithdrawalAmountValue').value = "";
+            document.getElementById('inputWithdrawalDestinationString').value = "";
         };
 
-        // ==================== SUPER ADMIN MASTER CONTROL OVERRIDES ====================
-        window.saveAdminAlgorithmicDirectives = function() {
-            currentSystemStrategyMode = document.getElementById('adminFormulaBehaviorSelect').value;
-            alert(`System behavioral state altered successfully to: ${currentSystemStrategyMode}`);
-            document.getElementById('adminHouseProfits').innerText = (Math.random() * 45 + 12).toFixed(2) + " BHD";
+        // ==================== ROOT ADMINISTRATIVE MANAGEMENT HOOK ACTIONS ====================
+        window.commitAdminStrategicRulesOverrides = function() {
+            currentSystemStrategyMode = document.getElementById('adminStrategicAlgorithmStateSelect').value;
+            alert(`Root directives modified. Strategy updated to vector rule node state: ${currentSystemStrategyMode}`);
+            document.getElementById('adminDisplayHouseProfitsSum').innerText = (Math.random() * 85 + 23).toFixed(2) + " BHD";
         };
 
-        window.executeAdminUIDProfileScanning = function() {
-            const scanUID = document.getElementById('adminTargetUIDField').value.trim();
-            const display = document.getElementById('adminProfileDataDisplayBlock');
-            display.classList.remove('hidden');
+        window.executeAdminAccountDeepScan = function() {
+            const queryTargetUIDToken = document.getElementById('adminAccountQueryUIDField').value.trim();
+            const viewBlockElementRef = document.getElementById('adminQueryResultDisplayArea');
+            viewBlockElementRef.classList.remove('hidden');
 
-            if (activeUserSession && scanUID === activeUserSession.uid) {
-                display.innerHTML = `
-                    <div><strong>Node Owner Identifier:</strong> ${activeUserSession.phone}</div>
-                    <div><strong>Liquid Accounting Bal:</strong> ${activeUserSession.balance.toFixed(2)} BHD</div>
-                    <div><strong>Security Referral Footprint:</strong> ${activeUserSession.referralCode}</div>
-                    <div class="pt-2"><button onclick="alert('User node access suspended inside centralized firewall.')" class="bg-rose-700 text-white px-2 py-1 rounded text-[9px] font-bold uppercase">BAN USER ACCOUNT NODE</button></div>
+            if (userProfileSessionObject && queryTargetUIDToken === userProfileSessionObject.uid) {
+                viewBlockElementRef.innerHTML = `
+                    <div><strong>Identifier Node Profile:</strong> ${userProfileSessionObject.phone}</div>
+                    <div><strong>Ledger Liquid Capital Bal:</strong> ${userProfileSessionObject.balance.toFixed(2)} BHD</div>
+                    <div><strong>Isolated Frozen Reserves:</strong> ${userProfileSessionObject.isolatedLockBalance.toFixed(2)} BHD</div>
+                    <div><strong>Network Affiliate Code Token:</strong> ${userProfileSessionObject.referralCode}</div>
+                    <div class="pt-2"><button onclick="alert('Account node suspended globally across system firewalls.')" class="w-full bg-rose-700 text-white py-1 rounded font-black uppercase text-[10px] tracking-widest">BAN ACCOUNT INSTANTLY</button></div>
                 `;
             } else {
-                display.innerHTML = `<span class="text-rose-400">Query Target Error: UID footprint match index missing from synchronized node stack.</span>`;
+                viewBlockElementRef.innerHTML = `<span class="text-rose-500 font-bold">Query Exception: Searched account record signature matrix not found inside local synchronized clusters blocks.</span>`;
             }
         };
 
-        // ==================== GLOBAL AUXILIARY COMPLIANCE ROUTINES ====================
-        window.synchronizeCloudMetrics = function() {
-            const spinner = document.getElementById('syncSpinner');
-            spinner.classList.add('animate-spin');
-            setTimeout(() => { spinner.classList.remove('animate-spin'); alert("Cloud Node Ledgers Synchronized in 14ms."); }, 600);
+        // ==================== CORE AUXILIARY REFRESH SYSTEM INTERFACES ====================
+        window.triggerManualCloudSync = function() {
+            const webIconRef = document.getElementById('cloudSyncIconRef');
+            webIconRef.classList.add('animate-spin');
+            setTimeout(() => { webIconRef.classList.remove('animate-spin'); alert("Premium Central Node Array Ledger Sync Completed in 9ms."); }, 500);
         };
 
-        window.executeLanguageRotation = function(langCode) {
-            activeSystemLanguage = langCode;
-            const targetDirectionality = (langCode === 'ar' || langCode === 'ur') ? 'rtl' : 'ltr';
-            document.getElementById('phoneView').setAttribute('dir', targetDirectionality);
+        window.switchTerminalLanguageMapping = function(targetLangIsoCode) {
+            globalSelectedLanguageIsoCode = targetLangIsoCode;
+            const structuralAlignmentDirectionRule = (targetLangIsoCode === 'ar' || targetLangIsoCode === 'ur') ? 'rtl' : 'ltr';
+            document.getElementById('applicationMobileFrame').setAttribute('dir', structuralAlignmentDirectionRule);
             
-            // Run localized string swap iterations across DOM tokens matching keys
-            const translationPacket = localizationMapBox[langCode];
-            document.querySelectorAll('[data-localize]').forEach(el => {
-                const translationKey = el.getAttribute('data-localize');
-                if (translationPacket[translationKey]) el.innerText = translationPacket[translationKey];
+            const selectedLanguagePackageDictionary = multiLanguageTranslationMatrix[targetLangIsoCode];
+            document.querySelectorAll('[data-lang-key]').forEach(elementRef => {
+                const targetAttributeBindingKey = elementRef.getAttribute('data-lang-key');
+                if (selectedLanguagePackageDictionary[targetAttributeBindingKey]) {
+                    elementRef.innerText = selectedLanguagePackageDictionary[targetAttributeBindingKey];
+                }
             });
         };
 
-        function updateUIMetrics() {
-            if (!activeUserSession) return;
-            document.getElementById('globalBalance').innerText = activeUserSession.balance.toFixed(2);
+        function refreshGlobalLedgerDisplayMetrics() {
+            if (!userProfileSessionObject) return;
+            document.getElementById('runtimeGlobalLedgerBalance').innerText = userProfileSessionObject.balance.toFixed(2);
         }
     </script>
 </body>
