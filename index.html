@@ -2,549 +2,340 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Tampa - Premier Color Predictor & Task Hub</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tampa Games</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #030712;
-            user-select: none;
-            -webkit-user-select: none;
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(-5%); }
+            50% { transform: translateY(0); }
         }
-        /* Tampa Branded Vibrant Multicolored Shifting Texture */
-        .tampa-colorful-text {
-            background: linear-gradient(45deg, #ff0055, #00ffcc, #ffcc00, #9900ff, #ff0055);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: colorshift 6s ease infinite;
-        }
-        @keyframes colorshift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .mobile-viewport-wrapper {
-            max-width: 440px;
-            width: 100%;
-            height: 100vh;
-            background-color: #0b0f19;
-        }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        
-        /* Interactive Component Animations */
-        .pop-in { animation: modalPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        @keyframes modalPop {
-            0% { transform: scale(0.7); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .balloon-bounce { animation: bounceFloat 2s ease-in-out infinite alternate; }
-        @keyframes bounceFloat {
-            0% { transform: translateY(0px) scale(1); }
-            100% { transform: translateY(-10px) scale(1.03); }
-        }
-        .wheel-spin-effect { animation: spinCycle 1.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
-        @keyframes spinCycle {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(1440deg); }
-        }
+        .animate-bounce-slow { animation: bounce-slow 2s infinite; }
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: spin-slow 4s linear infinite; }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-[#010307]">
+<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white min-h-screen font-sans select-none">
 
-    <div class="mobile-viewport-wrapper relative flex flex-col overflow-hidden shadow-2xl border-x border-slate-900">
-        
-        <div id="auth_portal_screen" class="absolute inset-0 bg-[#070a13] z-[100] flex flex-col justify-between p-6 overflow-y-auto hide-scroll">
-            <div class="text-center pt-8 space-y-2">
-                <h1 class="text-5xl font-extrabold tracking-tighter tampa-colorful-text">TAMPA</h1>
-                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Fast Performance • No Lag Engine</p>
-            </div>
-
-            <div class="bg-[#111827] p-5 rounded-3xl border border-slate-800/80 space-y-4 my-auto shadow-xl">
-                <div>
-                    <label class="text-xs font-bold text-slate-400 block mb-1">Mobile Number</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-3.5 text-xs text-slate-500 font-mono font-bold">+973</span>
-                        <input id="input_reg_phone" type="tel" maxlength="10" placeholder="Enter number" class="w-full bg-[#090d16] border border-slate-700 rounded-xl pl-14 pr-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-cyan-400">
-                    </div>
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-400 block mb-1">Password</label>
-                    <input id="input_reg_pwd" type="password" placeholder="Create login password" class="w-full bg-[#090d16] border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-400 block mb-1">Confirm Password</label>
-                    <input id="input_reg_pwd_confirm" type="password" placeholder="Verify password" class="w-full bg-[#090d16] border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-400 block mb-1">Referral Code <span class="text-[10px] text-slate-500 font-medium">(Optional)</span></label>
-                    <input id="input_reg_refer" type="text" maxlength="4" placeholder="4-Digit Code" class="w-full bg-[#090d16] border border-slate-700 rounded-xl px-4 py-3 text-sm font-mono uppercase text-white focus:outline-none focus:border-cyan-400">
-                </div>
-            </div>
-
-            <div class="space-y-3 pb-4">
-                <button onclick="processSecureGatewayAuth()" class="w-full py-4 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl font-black text-sm uppercase tracking-wider active:scale-[0.98] transition-transform shadow-lg shadow-purple-600/10">
-                    Login / Create Account
-                </button>
-                <button onclick="enterAsGuestUser()" class="w-full text-center text-xs text-slate-400 hover:text-white underline font-medium">
-                    Explore App via Guest Mode
-                </button>
-            </div>
-        </div>
-
-        <div class="p-4 bg-[#0e1626]/90 backdrop-blur-md border-b border-slate-900 sticky top-0 z-40 flex items-center justify-between">
-            <div class="space-y-0.5">
-                <h2 id="app_header_brand_logo" class="text-2xl font-black tracking-tight text-white uppercase tracking-wider">TAMPA</h2>
-                <div class="flex items-center gap-1.5 font-mono">
-                    <span class="text-[9px] bg-slate-900 text-cyan-400 border border-slate-800 px-1.5 py-0.5 rounded font-bold">UID: <span id="header_uid_field">000000</span></span>
-                    <span id="header_user_identity_label" class="text-[9px] text-slate-400 font-medium">Loading session...</span>
-                </div>
+    <header class="p-4 bg-black/40 backdrop-blur-md border-b border-pink-500/30 sticky top-0 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-widest bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent drop-shadow">
+                    TAMPA
+                </h1>
+                <div class="text-xs text-gray-300 mt-1">UID: <span id="player-uid" class="text-yellow-400 font-bold">849302</span> | <span id="player-name">Jitendra</span></div>
             </div>
             <div class="text-right">
-                <span class="text-[9px] text-slate-400 block uppercase tracking-widest font-black">Available Balance</span>
-                <span id="header_wallet_balance_lbl" class="text-lg font-black text-emerald-400 font-mono">0.000 BHD</span>
+                <div class="text-xs text-gray-400">Wallet Balance</div>
+                <div class="text-xl font-black text-green-400"><span id="wallet-balance">100.000</span> <span class="text-xs">BHD</span></div>
             </div>
         </div>
-
-        <div id="app_main_scrollable_viewport" class="flex-1 overflow-y-auto hide-scroll pb-24">
-            
-            <div id="view_games_dashboard" class="p-4 space-y-4">
-                <div class="bg-[#111827] p-3 rounded-2xl border border-slate-800 grid grid-cols-2 gap-3 shadow-md">
-                    <button onclick="switchSystemNavigation('wallet')" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-black rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-colors">
-                        <i class="fa-solid fa-wallet"></i> Deposit
-                    </button>
-                    <button onclick="switchSystemNavigation('wallet')" class="py-2.5 bg-rose-600 hover:bg-rose-500 text-xs font-black rounded-xl uppercase tracking-wider flex items-center justify-center gap-2 transition-colors">
-                        <i class="fa-solid fa-building-columns"></i> Withdrawal
-                    </button>
-                </div>
-
-                <div class="space-y-3">
-                    <div class="bg-gradient-to-br from-amber-500/10 to-slate-950 p-5 rounded-2xl border border-amber-500/20 flex justify-between items-center group relative overflow-hidden">
-                        <div class="space-y-1 z-10">
-                            <h3 class="text-lg font-black text-amber-400 tracking-wide uppercase">Bigly Arena</h3>
-                            <p class="text-[11px] text-slate-400">Predict numbers. 0-4 Small, 5-9 Big. 24 Hours active.</p>
-                            <button onclick="initializeLiveGameContext('bigly')" class="mt-3 px-4 py-2 bg-amber-500 text-slate-950 font-black text-xs rounded-lg uppercase tracking-wider active:scale-95 transition-transform">Launch Console</button>
-                        </div>
-                        <i class="fa-solid fa-layer-group text-6xl text-amber-500/5 absolute right-4 bottom-2 transition-transform group-hover:scale-110"></i>
-                    </div>
-
-                    <div class="bg-gradient-to-br from-rose-500/10 to-slate-950 p-5 rounded-2xl border border-rose-500/20 flex justify-between items-center group relative overflow-hidden">
-                        <div class="space-y-1 z-10">
-                            <h3 class="text-lg font-black text-rose-400 tracking-wide uppercase">Balloons Bomb</h3>
-                            <p class="text-[11px] text-slate-400">Multi-colored balloon arena with adaptive risk calculation engines.</p>
-                            <button onclick="initializeLiveGameContext('balloons')" class="mt-3 px-4 py-2 bg-rose-500 text-white font-black text-xs rounded-lg uppercase tracking-wider active:scale-95 transition-transform">Launch Console</button>
-                        </div>
-                        <i class="fa-solid fa-circle-dot text-6xl text-rose-500/5 absolute right-4 bottom-2 transition-transform group-hover:scale-110"></i>
-                    </div>
-
-                    <div class="bg-gradient-to-br from-cyan-500/10 to-slate-950 p-5 rounded-2xl border border-cyan-500/20 flex justify-between items-center group relative overflow-hidden">
-                        <div class="space-y-1 z-10">
-                            <h3 class="text-lg font-black text-cyan-400 tracking-wide uppercase">Spin Tunnel</h3>
-                            <p class="text-[11px] text-slate-400">Dual vector spinner mechanics utilizing Blue & White structural nodes.</p>
-                            <button onclick="initializeLiveGameContext('spin')" class="mt-3 px-4 py-2 bg-cyan-500 text-slate-950 font-black text-xs rounded-lg uppercase tracking-wider active:scale-95 transition-transform">Launch Console</button>
-                        </div>
-                        <i class="fa-solid fa-spinner text-6xl text-cyan-500/5 absolute right-4 bottom-2 transition-transform group-hover:scale-110"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view_gameplay_console" class="hidden p-4 space-y-4">
-                <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-center font-mono text-xs font-bold">
-                    <button id="loop_btn_30" onclick="alterTimeIntervalLoop(30)" class="py-2 rounded-lg bg-slate-800 text-cyan-400 border border-slate-700">30s</button>
-                    <button id="loop_btn_50" onclick="alterTimeIntervalLoop(50)" class="py-2 rounded-lg text-slate-400">50s</button>
-                    <button id="loop_btn_120" onclick="alterTimeIntervalLoop(120)" class="py-2 rounded-lg text-slate-400">2 Min</button>
-                </div>
-
-                <div class="bg-[#111827] p-4 rounded-xl border border-slate-800/60 flex justify-between items-center">
-                    <div>
-                        <span class="text-[9px] text-slate-400 uppercase tracking-widest font-black block">Active Period</span>
-                        <div id="lbl_console_period_id" class="text-xs font-mono font-bold text-slate-200 mt-0.5">20260530001</div>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-[9px] text-slate-400 uppercase tracking-widest font-black block">Time Remaining</span>
-                        <div id="lbl_console_timer" class="text-2xl font-black font-mono text-rose-500 mt-0.5">00:30</div>
-                    </div>
-                </div>
-
-                <div id="dynamic_game_interaction_node" class="bg-[#111827] p-5 rounded-2xl border border-slate-800/80 min-h-[200px] flex flex-col justify-center">
-                    </div>
-
-                <div class="bg-[#111827] p-4 rounded-xl border border-slate-800/60 space-y-3">
-                    <div class="text-xs font-black text-slate-400 uppercase tracking-wider">Bet Selection Volume (BHD)</div>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="setFastStakeAmount(1)" class="py-2 bg-slate-950 rounded-lg text-xs font-mono font-bold border border-slate-800">1</button>
-                        <button onclick="setFastStakeAmount(5)" class="py-2 bg-slate-950 rounded-lg text-xs font-mono font-bold border border-slate-800">5</button>
-                        <button onclick="setFastStakeAmount(10)" class="py-2 bg-slate-950 rounded-lg text-xs font-mono font-bold border border-slate-800">10</button>
-                        <input id="input_custom_stake" type="number" placeholder="Custom" class="w-full bg-slate-950 text-white rounded-lg text-center font-mono text-xs border border-slate-800 focus:outline-none focus:border-cyan-400">
-                    </div>
-                    <div class="text-[9px] text-slate-400 flex justify-between items-center pt-1 px-1 font-semibold">
-                        <span>Platform Regulatory Fee: 3%</span>
-                        <span class="font-mono text-cyan-400">Return: 2.00x Payout Multiplier</span>
-                    </div>
-                </div>
-
-                <div class="bg-[#111827] rounded-xl border border-slate-800/60 overflow-hidden shadow-xl">
-                    <div class="bg-slate-950/80 px-4 py-3 border-b border-slate-900 text-xs font-black tracking-wider uppercase text-slate-400">Historical Round Records</div>
-                    <div class="p-2 overflow-x-auto">
-                        <table class="w-full text-center text-xs font-mono">
-                            <thead>
-                                <tr class="text-slate-500 border-b border-slate-900">
-                                    <th class="pb-2 font-bold">Period ID</th>
-                                    <th class="pb-2 font-bold">Outcome Index</th>
-                                    <th class="pb-2 font-bold">Resolution Matrix</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table_history_record_rows" class="divide-y divide-slate-900/40 text-slate-300">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view_referral_portal" class="hidden p-4 space-y-4">
-                <div class="bg-gradient-to-br from-purple-900/20 to-slate-950 p-6 rounded-2xl border border-purple-500/20 text-center space-y-1">
-                    <span class="text-xs text-slate-400 font-bold uppercase tracking-widest block">Your Unique Referral Signature</span>
-                    <div id="lbl_profile_referral_code" class="text-3xl font-black font-mono tracking-widest text-purple-400 mt-1">TAM9</div>
-                    <p class="text-[11px] text-slate-400 pt-2">Unlock multi-layered referral commission loops across 3 downline tiers.</p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 text-center">
-                    <div class="bg-[#111827] p-4 rounded-xl border border-slate-800/80">
-                        <span class="text-[10px] text-slate-400 font-black uppercase tracking-wider block">Level 1 Commission (0.40%)</span>
-                        <div class="text-lg font-mono font-black text-white mt-1" id="lbl_network_count_l1">0 Network Members</div>
-                    </div>
-                    <div class="bg-[#111827] p-4 rounded-xl border border-slate-800/80">
-                        <span class="text-[10px] text-slate-400 font-black uppercase tracking-wider block">Level 2 Commission (0.10%)</span>
-                        <div class="text-lg font-mono font-black text-white mt-1" id="lbl_network_count_l2">0 Network Members</div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view_wallet_hub" class="hidden p-4 space-y-4">
-                <div class="bg-[#111827] p-5 rounded-2xl border border-slate-800 text-center shadow-lg">
-                    <span class="text-xs text-slate-400 uppercase tracking-widest font-black block">Liquid Asset Ledger</span>
-                    <div class="text-3xl font-black text-emerald-400 font-mono mt-1" id="lbl_wallet_hub_balance_display">0.000 BHD</div>
-                </div>
-
-                <div class="bg-[#111827] p-4 rounded-2xl border border-slate-800 space-y-4">
-                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 border-b border-slate-800/60 pb-2">Remittance Settlement Gateway</h3>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="setWithdrawalGatewayChannel('paypal')" id="gate_btn_paypal" class="py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-slate-950 border border-cyan-500/30 text-cyan-400 transition-all">PayPal Gateway</button>
-                        <button onclick="setWithdrawalGatewayChannel('stripe')" id="gate_btn_stripe" class="py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-slate-950 border border-slate-900 text-slate-500 transition-all">Stripe Interface</button>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Target Volume Payout (BHD)</label>
-                        <input id="input_withdrawal_volume" type="number" placeholder="0.000" class="w-full bg-slate-950 text-white font-mono rounded-xl px-4 py-3 text-sm border border-slate-800 focus:outline-none focus:border-cyan-400">
-                    </div>
-                    <button onclick="executePlatformWithdrawalTicket()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 font-black text-xs rounded-xl uppercase tracking-wider active:scale-95 transition-transform shadow-md shadow-emerald-950/30">
-                        Process Settlement Ticket
-                    </button>
-                </div>
-            </div>
-
-            <div id="view_settings_panel" class="hidden p-4 space-y-4">
-                <div class="bg-[#111827] p-4 rounded-xl border border-slate-800/80 space-y-3">
-                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider">Localization Vector</h3>
-                    <div class="grid grid-cols-3 gap-1.5 font-bold text-xs">
-                        <button onclick="adjustSystemInterfaceLocale('en')" id="locale_btn_en" class="py-2.5 rounded-lg bg-cyan-600 text-white shadow-sm">English</button>
-                        <button onclick="adjustSystemInterfaceLocale('ur')" id="locale_btn_ur" class="py-2.5 rounded-lg bg-slate-950 text-slate-400 border border-slate-900">Urdu</button>
-                        <button onclick="adjustSystemInterfaceLocale('ar')" id="locale_btn_ar" class="py-2.5 rounded-lg bg-slate-950 text-slate-400 border border-slate-900">Arabic</button>
-                    </div>
-                </div>
-
-                <a href="https://t.me/rihu2020" target="_blank" class="bg-[#229ed9]/10 border border-[#229ed9]/20 p-4 rounded-xl flex items-center justify-between group active:scale-95 transition-transform">
-                    <div class="flex items-center gap-3.5">
-                        <i class="fa-brands fa-telegram text-3xl text-[#229ed9]"></i>
-                        <div>
-                            <h4 class="text-xs font-black text-white uppercase tracking-wide">Client Relations Desk</h4>
-                            <p class="text-[10px] text-slate-400 mt-0.5">24H Telegram Assistance Node @rihu2020</p>
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-slate-600 group-hover:text-white transition-colors"></i>
-                </a>
-            </div>
-
+        <div class="max-w-md mx-auto flex gap-2 mt-3">
+            <button onclick="switchTab('wallet')" class="flex-1 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg font-bold text-sm shadow-lg active:scale-95 transition-transform">Deposit</button>
+            <button onclick="switchTab('wallet')" class="flex-1 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg font-bold text-sm shadow-lg active:scale-95 transition-transform">Withdrawal</button>
         </div>
+    </header>
 
-        <div class="absolute bottom-0 inset-x-0 h-20 bg-[#070a13]/95 backdrop-blur-md border-t border-slate-900/80 grid grid-cols-4 text-center z-50">
-            <button onclick="switchSystemNavigation('games')" id="nav_btn_games" class="flex flex-col items-center justify-center text-cyan-400 transition-colors">
-                <i class="fa-solid fa-gamepad text-lg"></i>
-                <span id="nav_lbl_games" class="text-[9px] font-black uppercase tracking-widest mt-1">Games</span>
-            </button>
-            <button onclick="switchSystemNavigation('referral')" id="nav_btn_referral" class="flex flex-col items-center justify-center text-slate-500 transition-colors">
-                <i class="fa-solid fa-people-group text-lg"></i>
-                <span id="nav_lbl_referral" class="text-[9px] font-black uppercase tracking-widest mt-1">Referral</span>
-            </button>
-            <button onclick="switchSystemNavigation('wallet')" id="nav_btn_wallet" class="flex flex-col items-center justify-center text-slate-500 transition-colors">
-                <i class="fa-solid fa-vault text-lg"></i>
-                <span id="nav_lbl_wallet" class="text-[9px] font-black uppercase tracking-widest mt-1">Wallet</span>
-            </button>
-            <button onclick="switchSystemNavigation('settings')" id="nav_btn_settings" class="flex flex-col items-center justify-center text-slate-500 transition-colors">
-                <i class="fa-solid fa-gears text-lg"></i>
-                <span id="nav_lbl_settings" class="text-[9px] font-black uppercase tracking-widest mt-1">Settings</span>
-            </button>
-        </div>
+    <main class="max-w-md mx-auto p-4 pb-24">
+        
+        <section id="tab-games" class="tab-content block space-y-6">
+            <div class="flex justify-between bg-black/50 p-1 rounded-xl border border-white/10">
+                <button onclick="switchGame('bigly')" id="btn-g-bigly" class="flex-1 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md">Bigly</button>
+                <button onclick="switchGame('balloons')" id="btn-g-balloons" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-400">Balloons Bomb</button>
+                <button onclick="switchGame('spin')" id="btn-g-spin" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-400">Spin Tunnel</button>
+            </div>
 
-        <div id="modal_game_outcome_overlay" class="hidden absolute inset-0 bg-black/80 z-[80] flex items-center justify-center p-6">
-            <div id="card_outcome_wrapper" class="bg-[#111827] border border-slate-800 p-6 rounded-3xl w-full text-center space-y-4 shadow-2xl">
+            <div class="bg-gradient-to-r from-purple-900/80 to-indigo-900/80 p-4 rounded-2xl border border-purple-500/40 shadow-xl text-center relative overflow-hidden">
+                <div class="flex justify-between text-xs text-gray-300 mb-1">
+                    <span>Period: <span id="current-period" class="text-cyan-400 font-mono font-bold">2026053101</span></span>
+                    <span class="flex gap-2">
+                        <span onclick="setTimerConfig(30)" class="cursor-pointer px-1.5 bg-black/30 rounded text-yellow-400 font-bold">30s</span>
+                        <span onclick="setTimerConfig(50)" class="cursor-pointer px-1.5 bg-black/30 rounded text-pink-400 font-bold">50s</span>
+                        <span onclick="setTimerConfig(120)" class="cursor-pointer px-1.5 bg-black/30 rounded text-cyan-400 font-bold">2m</span>
+                    </span>
                 </div>
-        </div>
+                
+                <div class="text-4xl font-black font-mono tracking-wider bg-black/40 inline-block px-6 py-2 rounded-xl border border-white/5 my-2">
+                    00:<span id="game-timer" class="text-yellow-400">30</span>
+                </div>
+                <div id="lock-notice" class="text-xs text-rose-400 font-bold hidden animate-pulse">⚠️ BETS LOCKED FOR CALCULATION (LAST 3s)</div>
+                
+                <div class="flex justify-around text-xxs mt-2 pt-2 border-t border-white/5 text-gray-400">
+                    <div>Pool A (Big/B1/White): <span id="pool-a-display" class="text-white font-bold">0.000</span> BHD</div>
+                    <div>Pool B (Small/B2/Blue): <span id="pool-b-display" class="text-white font-bold">0.000</span> BHD</div>
+                </div>
+            </div>
 
+            <div id="game-bigly" class="game-zone block space-y-4">
+                <div class="text-center text-sm font-bold tracking-wide text-pink-300">⭐ BIGLY: SIZE PREDICTION ⭐</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="placeBet('Big')" class="p-6 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl font-black text-2xl shadow-lg transform active:scale-95 transition-transform border border-amber-300/30">BIG<div class="text-xs font-normal opacity-80">(5 - 9)</div></button>
+                    <button onclick="placeBet('Small')" class="p-6 bg-gradient-to-br from-blue-500 to-indigo-700 rounded-2xl font-black text-2xl shadow-lg transform active:scale-95 transition-transform border border-blue-400/30">SMALL<div class="text-xs font-normal opacity-80">(0 - 4)</div></button>
+                </div>
+            </div>
+
+            <div id="game-balloons" class="game-zone hidden space-y-4">
+                <div class="text-center text-sm font-bold tracking-wide text-cyan-300">🎈 BALLOONS BOMB: LESS POOL SURVIVES 🎈</div>
+                <div class="grid grid-cols-2 gap-4 h-40 items-center justify-center">
+                    <div onclick="placeBet('Balloon 1')" class="cursor-pointer p-4 bg-gradient-to-b from-pink-500 to-red-600 rounded-full w-28 h-28 mx-auto flex flex-col justify-center items-center font-bold text-center border-2 border-white/20 animate-bounce-slow shadow-xl">
+                        <span>Balloon 1</span>
+                    </div>
+                    <div onclick="placeBet('Balloon 2')" class="cursor-pointer p-4 bg-gradient-to-b from-cyan-400 to-blue-600 rounded-full w-28 h-28 mx-auto flex flex-col justify-center items-center font-bold text-center border-2 border-white/20 animate-bounce-slow shadow-xl" style="animation-delay: 0.5s;">
+                        <span>Balloon 2</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="game-spin" class="game-zone hidden space-y-4">
+                <div class="text-center text-sm font-bold tracking-wide text-yellow-300">🌀 SPIN TUNNEL: CHAKRI WHEEL 🌀</div>
+                <div class="relative flex justify-center py-4">
+                    <div id="wheel-graphic" class="w-32 h-32 rounded-full border-4 border-yellow-400 bg-gradient-to-r from-white via-blue-600 to-white animate-spin-slow shadow-2xl flex items-center justify-center text-black font-black text-xs">TAMPA</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="placeBet('White')" class="py-3 bg-white text-black font-black rounded-xl shadow-md border-2 border-gray-300">WHITE</button>
+                    <button onclick="placeBet('Blue')" class="py-3 bg-blue-600 text-white font-black rounded-xl shadow-md border-2 border-blue-400">BLUE</button>
+                </div>
+            </div>
+
+            <div class="bg-black/30 p-4 rounded-xl border border-white/10 space-y-3">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs text-gray-300">Enter Bet Amount (BHD):</label>
+                    <span class="text-xxs text-rose-400">3% Admin Tax Applicable</span>
+                </div>
+                <input type="number" id="bet-amount" value="1.0" step="0.5" class="w-full bg-black/60 border border-white/20 p-2 rounded-lg font-bold text-center text-yellow-400 focus:outline-none focus:border-pink-500">
+            </div>
+
+            <div class="bg-black/40 p-3 rounded-xl border border-white/5 space-y-2">
+                <div class="text-xs font-bold text-gray-300 border-b border-white/10 pb-1">📊 Last Period Outcomes History</div>
+                <div id="history-list" class="text-xs space-y-1 font-mono text-gray-400 max-h-24 overflow-y-auto">
+                    <div>Period ..00: <span class="text-green-400">BIG [7]</span> | Pool Saved Engine</div>
+                    <div>Period ..99: <span class="text-blue-400">SMALL [2]</span> | Pool Saved Engine</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-refer" class="tab-content hidden space-y-4">
+            <div class="bg-gradient-to-r from-blue-900 to-indigo-900 p-5 rounded-2xl border border-cyan-500/30 text-center">
+                <div class="text-sm text-gray-300">Your Unique 4-Digit Invite Code</div>
+                <div class="text-3xl font-black text-cyan-400 tracking-widest my-2">TMP4</div>
+                <p class="text-xs text-gray-400">Earn from your downline continuously up to 3 Levels deep.</p>
+            </div>
+            <div class="bg-black/30 p-4 rounded-xl space-y-2 text-sm">
+                <div class="font-bold border-b border-white/10 pb-1 text-yellow-400">🏆 Network Dynamic Level Commission</div>
+                <div class="flex justify-between text-xs py-1"><span>Level 1 Tracking (0.40% Variable)</span><span class="text-green-400">+0.000 BHD</span></div>
+                <div class="flex justify-between text-xs py-1"><span>Level 2 Tracking (0.10% Variable)</span><span class="text-green-400">+0.000 BHD</span></div>
+                <div class="flex justify-between text-xs py-1"><span>Level 3 Overview Structure</span><span class="text-gray-400">Active Logs</span></div>
+            </div>
+        </section>
+
+        <section id="tab-wallet" class="tab-content hidden space-y-4">
+            <div class="bg-black/40 p-4 rounded-xl border border-white/10 space-y-4">
+                <h3 class="text-md font-bold text-green-400">💸 Safe Global Gateways Withdrawal</h3>
+                <div class="space-y-2">
+                    <button onclick="triggerWithdrawal('PayPal')" class="w-full py-3 bg-gradient-to-r from-blue-600 to-sky-500 font-bold rounded-xl active:scale-98 transition-transform">Withdraw via PayPal</button>
+                    <button onclick="triggerWithdrawal('Stripe')" class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 font-bold rounded-xl active:scale-98 transition-transform">Withdraw via Stripe</button>
+                </div>
+                <div class="text-xxs text-gray-400 text-center">All manual requests forward directly inside the Master Panel for validation checks.</div>
+            </div>
+        </section>
+
+        <section id="tab-setting" class="tab-content hidden space-y-4">
+            <div class="bg-black/40 p-4 rounded-xl space-y-3">
+                <h3 class="font-bold text-sm text-gray-300">🌐 Switch Regional Language</h3>
+                <select id="lang-switch" class="w-full bg-black/60 border border-white/20 p-2 rounded-lg text-sm text-white">
+                    <option value="en">English (Default)</option>
+                    <option value="ur">Urdu (اردو)</option>
+                    <option value="ar">Arabic (العربية)</option>
+                </select>
+            </div>
+            <div class="bg-black/40 p-4 rounded-xl space-y-2 text-xs">
+                <h3 class="font-bold text-sm text-rose-400">🛠️ Official Customer Support</h3>
+                <p>Telegram: <a href="https://t.me/rihu2020" class="text-cyan-400 font-bold underline">@rihu2020</a></p>
+                <p>Helpline Call: <span class="text-yellow-400 font-bold">8709913752</span></p>
+            </div>
+        </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-black/90 border-t border-white/10 py-2 z-50">
+        <div class="max-w-md mx-auto flex justify-around text-center">
+            <button onclick="switchTab('games')" id="nav-games" class="flex-1 text-pink-500 font-bold text-xs flex flex-col items-center">🕹️<div>Games</div></button>
+            <button onclick="switchTab('refer')" id="nav-refer" class="flex-1 text-gray-400 font-bold text-xs flex flex-col items-center">👥<div>Refer</div></button>
+            <button onclick="switchTab('wallet')" id="nav-wallet" class="flex-1 text-gray-400 font-bold text-xs flex flex-col items-center">💳<div>Wallet</div></button>
+            <button onclick="switchTab('setting')" id="nav-setting" class="flex-1 text-gray-400 font-bold text-xs flex flex-col items-center">⚙️<div>Settings</div></button>
+        </div>
+    </nav>
+
+    <div id="result-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center hidden z-50">
+        <div id="modal-box" class="p-8 rounded-3xl text-center max-w-xs w-full border transform scale-90 transition-all duration-300">
+            <h2 id="modal-title" class="text-3xl font-black mb-2">WIN !!</h2>
+            <p id="modal-desc" class="text-sm text-gray-200">Amount doubled safely inside balance wallet.</p>
+        </div>
     </div>
 
     <script>
-        // Memory Block Registries Storage Matrix
-        let appProfileSessionStore = {
-            uid: "482019", identityLabel: "Guest Sandbox Mode", tokenBalanceBHD: 50.000, referCodeSignature: "TAM9"
-        };
-        let runtimeActiveGameModeKey = "bigly";
-        let activeClockCycleDurationLimit = 30;
-        let runningEngineTimerCounter = 30;
-        let selectedInvestmentBetSlotLabel = null;
-        let assignedStakeVolumeTargetValue = 1;
-        let configuredWithdrawalTargetChannel = "paypal";
+        let currentTimerMax = 30;
+        let timeLeft = 30;
+        let balance = 100.000;
+        let selectedGame = 'bigly';
+        let isLocked = false;
 
-        // Global Localization Matrix Map Array
-        const globalLanguagePack = {
-            en: { games: "Games", referral: "Referral", wallet: "Wallet", settings: "Settings" },
-            ur: { games: "کھیل", referral: "ریفرل", wallet: "والیٹ", settings: "سیٹنگز" },
-            ar: { games: "الألعاب", referral: "الإحالة", wallet: "المحفظة", settings: "الإعدادات" }
-        };
+        // Dynamic Virtual Counter Pools (Anti-loss verification tracker)
+        let poolA = 0; // Big, Balloon 1, White
+        let poolB = 0; // Small, Balloon 2, Blue
+        let activeBetChoice = null;
+        let activeBetAmount = 0;
 
-        // Prohibit Right Click Inspection Engine Traps
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key))) e.preventDefault();
-        });
-
-        function switchSystemNavigation(targetPanelKey) {
-            const architecturalPanels = ['view_games_dashboard', 'view_gameplay_console', 'view_referral_portal', 'view_wallet_hub', 'view_settings_panel'];
-            architecturalPanels.forEach(panel => document.getElementById(panel).classList.add('hidden'));
+        // Navigation Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             
-            const navigationButtons = ['nav_btn_games', 'nav_btn_referral', 'nav_btn_wallet', 'nav_btn_settings'];
-            navigationButtons.forEach(btn => document.getElementById(btn).className = "flex flex-col items-center justify-center text-slate-500 transition-colors");
-
-            if (targetPanelKey === 'games') {
-                document.getElementById('view_games_dashboard').classList.remove('hidden');
-                document.getElementById('nav_btn_games').className = "flex flex-col items-center justify-center text-cyan-400 transition-colors";
-                document.getElementById('app_header_brand_logo').innerText = "TAMPA";
-                document.getElementById('app_header_brand_logo').className = "text-2xl font-black tracking-tight text-white uppercase tracking-wider";
-            } else {
-                document.getElementById('view_' + (targetPanelKey === 'referral' ? 'referral_portal' : targetPanelKey === 'settings' ? 'settings_panel' : 'wallet_hub')).classList.remove('hidden');
-                if (document.getElementById('nav_btn_' + targetPanelKey)) {
-                    document.getElementById('nav_btn_' + targetPanelKey).className = "flex flex-col items-center justify-center text-cyan-400 transition-colors";
-                }
-            }
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('text-pink-500'));
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.add('text-gray-400'));
+            document.getElementById(`nav-${tabId}`).classList.add('text-pink-500');
         }
 
-        function processSecureGatewayAuth() {
-            let phone = document.getElementById('input_reg_phone').value;
-            let pass = document.getElementById('input_reg_pwd').value;
-            let passConf = document.getElementById('input_reg_pwd_confirm').value;
-
-            if (phone.length < 8 || pass === "" || pass !== passConf) {
-                alert("Security Verification Error! Validation parameters match parameters requirements mismatch.");
-                return;
-            }
-            appProfileSessionStore.identityLabel = "+973 " + phone;
-            appProfileSessionStore.uid = Math.floor(100000 + Math.random() * 900000).toString();
-            appProfileSessionStore.referCodeSignature = "TMP" + Math.floor(1000 + Math.random() * 9000);
-            synchronizeProfileRenderStates();
-            document.getElementById('auth_portal_screen').classList.add('hidden');
+        // Sub Game Modules Switching Logic
+        function switchGame(gameId) {
+            selectedGame = gameId;
+            document.querySelectorAll('.game-zone').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`game-${gameId}`).classList.remove('hidden');
+            
+            document.querySelectorAll('[id^="btn-g-"]').forEach(btn => {
+                btn.classList.remove('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white');
+                btn.classList.add('text-gray-400');
+            });
+            document.getElementById(`btn-g-${gameId}`).classList.add('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white');
+            resetPoolsData();
         }
 
-        function enterAsGuestUser() {
-            appProfileSessionStore.uid = Math.floor(100000 + Math.random() * 900000).toString();
-            appProfileSessionStore.identityLabel = "Guest Session User";
-            synchronizeProfileRenderStates();
-            document.getElementById('auth_portal_screen').classList.add('hidden');
+        function setTimerConfig(sec) {
+            currentTimerMax = sec;
+            timeLeft = sec;
+            resetPoolsData();
         }
 
-        function synchronizeProfileRenderStates() {
-            document.getElementById('header_uid_field').innerText = appProfileSessionStore.uid;
-            document.getElementById('header_user_identity_label').innerText = appProfileSessionStore.identityLabel;
-            document.getElementById('header_wallet_balance_lbl').innerText = appProfileSessionStore.tokenBalanceBHD.toFixed(3) + " BHD";
-            document.getElementById('lbl_wallet_hub_balance_display').innerText = appProfileSessionStore.tokenBalanceBHD.toFixed(3) + " BHD";
-            document.getElementById('lbl_profile_referral_code').innerText = appProfileSessionStore.referCodeSignature;
+        function resetPoolsData() {
+            poolA = Math.random() * 20; 
+            poolB = Math.random() * 20;
+            updatePoolUI();
         }
 
-        function initializeLiveGameContext(gameKey) {
-            runtimeActiveGameModeKey = gameKey;
-            switchSystemNavigation('gameplay_console');
-            document.getElementById('app_header_brand_logo').innerText = "TAMPA: " + gameKey;
-            document.getElementById('app_header_brand_logo').className = "text-xl font-black tracking-tight tampa-colorful-text uppercase";
-            renderTargetGameConsoleArchitectureInterface();
+        function updatePoolUI() {
+            document.getElementById('pool-a-display').innerText = poolA.toFixed(3);
+            document.getElementById('pool-b-display').innerText = poolB.toFixed(3);
         }
 
-        function alterTimeIntervalLoop(seconds) {
-            activeClockCycleDurationLimit = seconds;
-            runningEngineTimerCounter = seconds;
-            ['loop_btn_30', 'loop_btn_50', 'loop_btn_120'].forEach(id => document.getElementById(id).className = "py-2 rounded-lg text-slate-400");
-            let targetNode = seconds === 30 ? 'loop_btn_30' : seconds === 50 ? 'loop_btn_50' : 'loop_btn_120';
-            document.getElementById(targetNode).className = "py-2 rounded-lg bg-slate-800 text-cyan-400 border border-slate-700";
-        }
-
-        function renderTargetGameConsoleArchitectureInterface() {
-            const targetContainer = document.getElementById('dynamic_game_interaction_node');
-            if (runtimeActiveGameModeKey === 'bigly') {
-                targetContainer.innerHTML = `
-                    <div class="text-center space-y-4">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block">Select Matrix Pool Vector Target</span>
-                        <div class="grid grid-cols-2 gap-4">
-                            <button onclick="commitBetVectorOption('Big')" class="py-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl text-lg font-black uppercase tracking-wider shadow-lg active:scale-95 transition-transform">Big<span class="block text-[9px] text-amber-200 opacity-60 font-mono">(5 - 9)</span></button>
-                            <button onclick="commitBetVectorOption('Small')" class="py-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl text-lg font-black uppercase tracking-wider shadow-lg active:scale-95 transition-transform">Small<span class="block text-[9px] text-blue-200 opacity-60 font-mono">(0 - 4)</span></button>
-                        </div>
-                    </div>`;
-            } else if (runtimeActiveGameModeKey === 'balloons') {
-                targetContainer.innerHTML = `
-                    <div class="text-center space-y-4">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block">Choose Live Interactive Balloon Frame</span>
-                        <div class="flex justify-around items-center py-2">
-                            <div onclick="commitBetVectorOption('Balloon Red')" class="w-16 h-20 bg-gradient-to-b from-rose-500 to-red-600 rounded-full flex flex-col items-center justify-center cursor-pointer shadow-lg active:scale-90 transition-transform relative balloon-bounce"><span class="text-[10px] font-black">RED</span><div class="w-0.5 h-3 bg-slate-600 absolute -bottom-2"></div></div>
-                            <div onclick="commitBetVectorOption('Balloon Blue')" class="w-16 h-20 bg-gradient-to-b from-cyan-500 to-blue-600 rounded-full flex flex-col items-center justify-center cursor-pointer shadow-lg active:scale-90 transition-transform relative balloon-bounce"><span class="text-[10px] font-black">BLUE</span><div class="w-0.5 h-3 bg-slate-600 absolute -bottom-2"></div></div>
-                        </div>
-                    </div>`;
-            } else if (runtimeActiveGameModeKey === 'spin') {
-                targetContainer.innerHTML = `
-                    <div class="text-center space-y-4 flex flex-col items-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block">Vector Tunnel Configuration Hub</span>
-                        <div id="wheel_spinner_element" class="w-20 h-20 rounded-full border-4 border-slate-800 flex items-center justify-center text-[10px] font-black bg-gradient-to-r from-white via-blue-600 to-white text-slate-900 transition-all">HUB</div>
-                        <div class="grid grid-cols-2 gap-4 w-full">
-                            <button onclick="commitBetVectorOption('White Tunnel')" class="py-2.5 bg-white text-slate-950 rounded-xl text-xs font-black tracking-widest uppercase">White Zone</button>
-                            <button onclick="commitBetVectorOption('Blue Tunnel')" class="py-2.5 bg-blue-600 text-white rounded-xl text-xs font-black tracking-widest uppercase">Blue Zone</button>
-                        </div>
-                    </div>`;
-            }
-        }
-
-        function commitBetVectorOption(optionKey) {
-            if (runningEngineTimerCounter <= 3) {
-                alert("Calculations Processing Loop Freeze! Order entry restricted during evaluation state.");
-                return;
-            }
-            selectedInvestmentBetSlotLabel = optionKey;
-            alert("Position Committed Lock: [ " + optionKey.toUpperCase() + " ]");
-        }
-
-        function setFastStakeAmount(val) {
-            assignedStakeVolumeTargetValue = val;
-            document.getElementById('input_custom_stake').value = val;
-        }
-
-        // 1-Second Master Execution Loop Ticker
+        // Timer Loop Running 24/7 Engine
         setInterval(() => {
-            if (runningEngineTimerCounter <= 1) {
-                runningEngineTimerCounter = activeClockCycleDurationLimit;
-                executeEngineEvaluationCalculations();
+            if (timeLeft > 1) {
+                timeLeft--;
+                document.getElementById('game-timer').innerText = timeLeft < 10 ? '0' + timeLeft : timeLeft;
+                
+                // 3 Second Anti-Cheat Freeze Rule
+                if (timeLeft <= 3) {
+                    isLocked = true;
+                    document.getElementById('lock-notice').classList.remove('hidden');
+                } else {
+                    isLocked = false;
+                    document.getElementById('lock-notice').classList.add('hidden');
+                }
             } else {
-                runningEngineTimerCounter--;
-            }
-
-            let minStr = Math.floor(runningEngineTimerCounter / 60).toString().padStart(2, '0');
-            let secStr = (runningEngineTimerCounter % 60).toString().padStart(2, '0');
-            document.getElementById('lbl_console_timer').innerText = minStr + ":" + secStr;
-
-            if (runningEngineTimerCounter <= 3) {
-                document.getElementById('lbl_console_timer').className = "text-2xl font-black font-mono text-amber-500 animate-pulse mt-0.5";
-            } else {
-                document.getElementById('lbl_console_timer').className = "text-2xl font-black font-mono text-rose-500 mt-0.5";
+                // Timer Hits 0: Trigger Server Result Simulation Loop
+                timeLeft = currentTimerMax;
+                executePeriodResultCalculation();
             }
         }, 1000);
 
-        function executeEngineEvaluationCalculations() {
-            let luckyDigit = Math.floor(Math.random() * 10);
-            let sizeClassificationLabel = luckyDigit >= 5 ? "Big" : "Small";
-            
-            let displayOutcomeString = sizeClassificationLabel;
-            if (runtimeActiveGameModeKey === 'balloons') displayOutcomeString = Math.random() > 0.5 ? "Red Solid" : "Blue Defused";
-            if (runtimeActiveGameModeKey === 'spin') {
-                displayOutcomeString = Math.random() > 0.5 ? "White Hub" : "Blue Hub";
-                const wheel = document.getElementById('wheel_spinner_element');
-                if(wheel) {
-                    wheel.classList.add('wheel-spin-effect');
-                    setTimeout(() => wheel.classList.remove('wheel-spin-effect'), 1400);
-                }
-            }
-
-            let targetHistoryRowsNode = document.getElementById('table_history_record_rows');
-            let currentActivePeriodId = document.getElementById('lbl_console_period_id').innerText;
-            
-            targetHistoryRowsNode.innerHTML = `
-                <tr class="hover:bg-slate-900 transition-colors">
-                    <td class="py-2.5 font-bold text-slate-500">${currentActivePeriodId}</td>
-                    <td class="py-2.5 text-cyan-400 font-extrabold">${luckyDigit}</td>
-                    <td class="py-2.5 font-medium text-slate-300">${displayOutcomeString}</td>
-                </tr>` + targetHistoryRowsNode.innerHTML;
-
-            document.getElementById('lbl_console_period_id').innerText = parseInt(currentActivePeriodId) + 1;
-
-            if (selectedInvestmentBetSlotLabel !== null) {
-                // Adaptive Risk Pool Assessment Check. Anti-Drain Low Volume Winning Vector.
-                let stateResultWinFlag = Math.random() > 0.45; 
-                triggerGameOutcomeModalOverlaySequence(stateResultWinFlag);
-            }
-            selectedInvestmentBetSlotLabel = null;
-        }
-
-        function triggerGameOutcomeModalOverlaySequence(isVictoryState) {
-            const parentOverlayNode = document.getElementById('modal_game_outcome_overlay');
-            const visualCardWrapperNode = document.getElementById('card_outcome_wrapper');
-            parentOverlayNode.classList.remove('hidden');
-            visualCardWrapperNode.className = "bg-[#111827] border border-slate-800 p-6 rounded-3xl w-full text-center space-y-4 shadow-2xl pop-in";
-
-            if (isVictoryState) {
-                let grossEarningsVolumeAmount = (assignedStakeVolumeTargetValue * 0.97) * 2;
-                appProfileSessionStore.tokenBalanceBHD += grossEarningsVolumeAmount;
-                visualCardWrapperNode.innerHTML = `
-                    <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto"><i class="fa-solid fa-trophy"></i></div>
-                    <h3 class="text-xl font-black text-emerald-400 uppercase tracking-wider">ROUND CLEAR</h3>
-                    <p class="text-xs text-slate-400">Position verification authenticated. Gross capital payout of <span class="font-mono font-bold text-white">${grossEarningsVolumeAmount.toFixed(3)} BHD</span> credited.</p>
-                    <button onclick="dismissGameOutcomeModalOverlay()" class="mt-2 px-6 py-2 bg-slate-950 text-white rounded-xl text-xs font-bold uppercase tracking-widest border border-slate-800">Acknowledge</button>`;
-            } else {
-                appProfileSessionStore.tokenBalanceBHD -= assignedStakeVolumeTargetValue;
-                visualCardWrapperNode.innerHTML = `
-                    <div class="w-16 h-16 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center text-3xl mx-auto"><i class="fa-solid fa-skull-crossbones"></i></div>
-                    <h3 class="text-xl font-black text-rose-400 uppercase tracking-wider">ROUND TERMINATED</h3>
-                    <p class="text-xs text-slate-400">Risk parameters validation collapse. Balance loss of <span class="font-mono font-bold text-white">${assignedStakeVolumeTargetValue.toFixed(3)} BHD</span> executed.</p>
-                    <button onclick="dismissGameOutcomeModalOverlay()" class="mt-2 px-6 py-2 bg-slate-950 text-white rounded-xl text-xs font-bold uppercase tracking-widest border border-slate-800">Acknowledge</button>`;
-            }
-            synchronizeProfileRenderStates();
-        }
-
-        function dismissGameOutcomeModalOverlay() {
-            document.getElementById('modal_game_outcome_overlay').classList.add('hidden');
-        }
-
-        function setWithdrawalGatewayChannel(channelIdKey) {
-            configuredWithdrawalTargetChannel = channelIdKey;
-            ['gate_btn_paypal', 'gate_btn_stripe'].forEach(id => document.getElementById(id).className = "py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-slate-950 border border-slate-900 text-slate-500 transition-all");
-            document.getElementById('gate_btn_' + channelIdKey).className = "py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-slate-950 border border-cyan-500/30 text-cyan-400 transition-all";
-        }
-
-        function executePlatformWithdrawalTicket() {
-            let amountVal = parseFloat(document.getElementById('input_withdrawal_volume').value);
-            if (isNaN(amountVal) || amountVal <= 0 || amountVal > appProfileSessionStore.tokenBalanceBHD) {
-                alert("Remittance Error! Insufficient assets liquidity index constraints.");
+        // Player Bet Placements with 3% Admin Tax Rules Deductions
+        function placeBet(choice) {
+            if (isLocked) {
+                alert("Calculation in progress! Market Locked for 3 Seconds.");
                 return;
             }
-            appProfileSessionStore.tokenBalanceBHD -= amountVal;
-            alert("Settlement Remittance Requested Dispatched Successfully via Axis Channel: " + configuredWithdrawalTargetChannel.toUpperCase());
-            synchronizeProfileRenderStates();
+            let amt = parseFloat(document.getElementById('bet-amount').value);
+            if (isNaN(amt) || amt <= 0 || amt > balance) {
+                alert("Invalid or Insufficient Balance verification failed!");
+                return;
+            }
+
+            // Deduct full amount from balance immediately
+            balance -= amt;
+            document.getElementById('wallet-balance').innerText = balance.toFixed(3);
+
+            // Calculate 3% Admin Service Fees Tax
+            let feeTax = amt * 0.03;
+            let finalNetBet = amt - feeTax;
+
+            activeBetChoice = choice;
+            activeBetAmount = finalNetBet;
+
+            // Route pool additions matching choice metrics
+            if (['Big', 'Balloon 1', 'White'].includes(choice)) {
+                poolA += finalNetBet;
+            } else {
+                poolB += finalNetBet;
+            }
+            updatePoolUI();
+            alert(`Bet successfully recorded on ${choice}!`);
         }
 
-        function adjustSystemInterfaceLocale(langCode) {
-            ['locale_btn_en', 'locale_btn_ur', 'locale_btn_ar'].forEach(id => document.getElementById(id).className = "py-2.5 rounded-lg bg-slate-950 text-slate-400 border border-slate-900");
-            document.getElementById('locale_btn_' + langCode).className = "py-2.5 rounded-lg bg-cyan-600 text-white shadow-sm";
-            
-            // Dynamic Language Localization Text Assignments Layer
-            document.getElementById('nav_lbl_games').innerText = globalLanguagePack[langCode].games;
-            document.getElementById('nav_lbl_referral').innerText = globalLanguagePack[langCode].referral;
-            document.getElementById('nav_lbl_wallet').innerText = globalLanguagePack[langCode].wallet;
-            document.getElementById('nav_lbl_settings').innerText = globalLanguagePack[langCode].settings;
-            alert("System Localization Context Shifted to: " + langCode.toUpperCase());
+        // Admin Controlled Logic Matrix Execution (Less pool amount wins instantly)
+        function executePeriodResultCalculation() {
+            let winningSide = "";
+            let generatedLuckyDigit = 0;
+
+            // Enforce less money pool wins logic system metrics
+            if (poolA < poolB) {
+                winningSide = ['Big', 'Balloon 1', 'White'].includes(activeBetChoice) || activeBetChoice === null ? 'Side A Winner' : 'Side A';
+                generatedLuckyDigit = Math.floor(Math.random() * 5) + 5; // Big numbers (5-9)
+            } else {
+                winningSide = ['Small', 'Balloon 2', 'Blue'].includes(activeBetChoice) ? 'Side B Winner' : 'Side B';
+                generatedLuckyDigit = Math.floor(Math.random() * 5); // Small numbers (0-4)
+            }
+
+            // Check if player won
+            let baseCheckWin = false;
+            if (activeBetChoice !== null) {
+                if (['Big', 'Balloon 1', 'White'].includes(activeBetChoice) && poolA < poolB) baseCheckWin = true;
+                if (['Small', 'Balloon 2', 'Blue'].includes(activeBetChoice) && poolB < poolA) baseCheckWin = true;
+            }
+
+            // Animation Processing Popups UI Triggers
+            let modal = document.getElementById('result-modal');
+            let box = document.getElementById('modal-box');
+            modal.classList.remove('hidden');
+
+            if (baseCheckWin && activeBetAmount > 0) {
+                let prizeEarnings = activeBetAmount * 2;
+                balance += prizeEarnings;
+                document.getElementById('wallet-balance').innerText = balance.toFixed(3);
+
+                box.className = "p-8 rounded-3xl text-center max-w-xs w-full border bg-gradient-to-b from-green-600 to-emerald-900 border-green-400 shadow-2xl scale-100 transition-transform";
+                document.getElementById('modal-title').innerText = "🏆 WINNER!";
+                document.getElementById('modal-desc').innerText = `+${prizeEarnings.toFixed(3)} BHD added to your wallet!`;
+            } else {
+                box.className = "p-8 rounded-3xl text-center max-w-xs w-full border bg-gradient-to-b from-rose-700 to-red-950 border-rose-500 shadow-2xl scale-100 transition-transform";
+                document.getElementById('modal-title').innerText = "❌ LOST";
+                document.getElementById('modal-desc').innerText = activeBetChoice === null ? "No Active bets placed during this period." : "Better luck next time in Tampa!";
+            }
+
+            // 2 Seconds Display Rule Animation Clears
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                // Increment Period Serial Numbers Counter
+                let cp = parseInt(document.getElementById('current-period').innerText);
+                document.getElementById('current-period').innerText = cp + 1;
+                
+                // Clear state memory for next validation session
+                activeBetChoice = null;
+                activeBetAmount = 0;
+                resetPoolsData();
+            }, 2000);
+        }
+
+        function triggerWithdrawal(gateway) {
+            alert(`Withdrawal request via ${gateway} submitted to Panel queue for Admin Approval/Disallowed checks.`);
         }
     </script>
 </body>
