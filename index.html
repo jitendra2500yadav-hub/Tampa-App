@@ -1,342 +1,258 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tampa Games</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @keyframes bounce-slow {
-            0%, 100% { transform: translateY(-5%); }
-            50% { transform: translateY(0); }
-        }
-        .animate-bounce-slow { animation: bounce-slow 2s infinite; }
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 4s linear infinite; }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white min-h-screen font-sans select-none">
+import React, { useState, useEffect } from 'react';
+import { ArrowPathIcon, WalletIcon, ArrowUpTrayIcon, ArrowDownTrayIcon, TrophyIcon } from '@heroicons/react/24/outline';
 
-    <header class="p-4 bg-black/40 backdrop-blur-md border-b border-pink-500/30 sticky top-0 z-50">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-extrabold tracking-widest bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent drop-shadow">
-                    TAMPA
-                </h1>
-                <div class="text-xs text-gray-300 mt-1">UID: <span id="player-uid" class="text-yellow-400 font-bold">849302</span> | <span id="player-name">Jitendra</span></div>
-            </div>
-            <div class="text-right">
-                <div class="text-xs text-gray-400">Wallet Balance</div>
-                <div class="text-xl font-black text-green-400"><span id="wallet-balance">100.000</span> <span class="text-xs">BHD</span></div>
-            </div>
-        </div>
-        <div class="max-w-md mx-auto flex gap-2 mt-3">
-            <button onclick="switchTab('wallet')" class="flex-1 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg font-bold text-sm shadow-lg active:scale-95 transition-transform">Deposit</button>
-            <button onclick="switchTab('wallet')" class="flex-1 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg font-bold text-sm shadow-lg active:scale-95 transition-transform">Withdrawal</button>
-        </div>
-    </header>
+// Mock types for project consistency
+interface GameResult {
+  periodNo: string;
+  winningBox: 'A' | 'B';
+  multiplierA: string;
+  multiplierB: string;
+  winnerScore: string;
+}
 
-    <main class="max-w-md mx-auto p-4 pb-24">
+export default function TapBoxGameView() {
+  // Game States
+  const [walletBalance, setWalletBalance] = useState<number>(120.50);
+  const [timeLeft, setTimeLeft] = useState<number>(25);
+  const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
+  const [betAmount, setBetAmount] = useState<string>('');
+  const [selectedBox, setSelectedBox] = useState<'A' | 'B' | null>(null);
+  
+  // Post-round Reveal States
+  const [revealedMultA, setRevealedMultA] = useState<string | null>(null);
+  const [revealedMultB, setRevealedMultB] = useState<string | null>(null);
+  const [roundStatus, setRoundStatus] = useState<'betting' | 'won' | 'lost' | 'ended'>('betting');
+
+  // Last 10 Results History Data
+  const [history, setHistory] = useState<GameResult[]>([
+    { periodNo: '1045', winningBox: 'B', multiplierA: '1x', multiplierB: '3x', winnerScore: '3x' },
+    { periodNo: '1044', winningBox: 'A', multiplierA: '2x', multiplierB: '1x', winnerScore: '2x' },
+    { periodNo: '1042', winningBox: 'B', multiplierA: '5x', multiplierB: '6x', winnerScore: '6x' },
+    { periodNo: '1041', winningBox: 'B', multiplierA: '1x', multiplierB: '3x', winnerScore: '3x' },
+    { periodNo: '1040', winningBox: 'A', multiplierA: '4x', multiplierB: '1x', winnerScore: '4x' },
+    { periodNo: '1039', winningBox: 'B', multiplierA: '1x', multiplierB: '5x', winnerScore: '5x' },
+    { periodNo: '1037', winningBox: 'A', multiplierA: '2x', multiplierB: '1x', winnerScore: '2x' },
+    { periodNo: '1036', winningBox: 'B', multiplierA: '3x', multiplierB: '4x', winnerScore: '4x' },
+    { periodNo: '1035', winningBox: 'A', multiplierA: '5x', multiplierB: '2x', winnerScore: '5x' },
+    { periodNo: '1034', winningBox: 'B', multiplierA: '1x', multiplierB: '3x', winnerScore: '3x' },
+  ]);
+
+  // 25 Seconds Countdown Timer Logic
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isTimerActive && timeLeft > 0) {
+      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    } else if (timeLeft === 0 && isTimerActive) {
+      handleRoundEnd();
+    }
+    return () => clearTimeout(timer);
+  }, [timeLeft, isTimerActive]);
+
+  const startNewRound = () => {
+    setTimeLeft(25);
+    setIsTimerActive(true);
+    setRevealedMultA(null);
+    setRevealedMultB(null);
+    setRoundStatus('betting');
+  };
+
+  const handleRoundEnd = () => {
+    setIsTimerActive(false);
+    
+    // Simulate Random Multiplier outcome on end (e.g., 4x vs 5x)
+    const multA = Math.floor(Math.random() * 5 + 1) + 'x';
+    const multB = Math.floor(Math.random() * 5 + 1) + 'x';
+    
+    setRevealedMultA(multA);
+    setRevealedMultB(multB);
+    
+    const numA = parseInt(multA);
+    const numB = parseInt(multB);
+    const winningSide = numA > numB ? 'A' : 'B';
+
+    // Check Win/Loss conditions if user placed a bet
+    if (selectedBox) {
+      if (selectedBox === winningSide) {
+        setRoundStatus('won');
+        const winFactor = winningSide === 'A' ? numA : numB;
+        setWalletBalance(prev => prev + (parseFloat(betAmount || '0') * winFactor));
+      } else {
+        setRoundStatus('lost');
+        setWalletBalance(prev => prev - parseFloat(betAmount || '0'));
+      }
+    } else {
+      setRoundStatus('ended');
+    }
+
+    // Append to History List
+    const newPeriod = (parseInt(history[0].periodNo) + 1).toString();
+    setHistory(prev => [
+      {
+        periodNo: newPeriod,
+        winningBox: winningSide,
+        multiplierA: multA,
+        multiplierB: multB,
+        winnerScore: winningSide === 'A' ? multA : multB
+      },
+      ...prev.slice(0, 9)
+    ]);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col items-center p-4">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
         
-        <section id="tab-games" class="tab-content block space-y-6">
-            <div class="flex justify-between bg-black/50 p-1 rounded-xl border border-white/10">
-                <button onclick="switchGame('bigly')" id="btn-g-bigly" class="flex-1 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md">Bigly</button>
-                <button onclick="switchGame('balloons')" id="btn-g-balloons" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-400">Balloons Bomb</button>
-                <button onclick="switchGame('spin')" id="btn-g-spin" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-400">Spin Tunnel</button>
-            </div>
-
-            <div class="bg-gradient-to-r from-purple-900/80 to-indigo-900/80 p-4 rounded-2xl border border-purple-500/40 shadow-xl text-center relative overflow-hidden">
-                <div class="flex justify-between text-xs text-gray-300 mb-1">
-                    <span>Period: <span id="current-period" class="text-cyan-400 font-mono font-bold">2026053101</span></span>
-                    <span class="flex gap-2">
-                        <span onclick="setTimerConfig(30)" class="cursor-pointer px-1.5 bg-black/30 rounded text-yellow-400 font-bold">30s</span>
-                        <span onclick="setTimerConfig(50)" class="cursor-pointer px-1.5 bg-black/30 rounded text-pink-400 font-bold">50s</span>
-                        <span onclick="setTimerConfig(120)" class="cursor-pointer px-1.5 bg-black/30 rounded text-cyan-400 font-bold">2m</span>
-                    </span>
-                </div>
-                
-                <div class="text-4xl font-black font-mono tracking-wider bg-black/40 inline-block px-6 py-2 rounded-xl border border-white/5 my-2">
-                    00:<span id="game-timer" class="text-yellow-400">30</span>
-                </div>
-                <div id="lock-notice" class="text-xs text-rose-400 font-bold hidden animate-pulse">⚠️ BETS LOCKED FOR CALCULATION (LAST 3s)</div>
-                
-                <div class="flex justify-around text-xxs mt-2 pt-2 border-t border-white/5 text-gray-400">
-                    <div>Pool A (Big/B1/White): <span id="pool-a-display" class="text-white font-bold">0.000</span> BHD</div>
-                    <div>Pool B (Small/B2/Blue): <span id="pool-b-display" class="text-white font-bold">0.000</span> BHD</div>
-                </div>
-            </div>
-
-            <div id="game-bigly" class="game-zone block space-y-4">
-                <div class="text-center text-sm font-bold tracking-wide text-pink-300">⭐ BIGLY: SIZE PREDICTION ⭐</div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="placeBet('Big')" class="p-6 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl font-black text-2xl shadow-lg transform active:scale-95 transition-transform border border-amber-300/30">BIG<div class="text-xs font-normal opacity-80">(5 - 9)</div></button>
-                    <button onclick="placeBet('Small')" class="p-6 bg-gradient-to-br from-blue-500 to-indigo-700 rounded-2xl font-black text-2xl shadow-lg transform active:scale-95 transition-transform border border-blue-400/30">SMALL<div class="text-xs font-normal opacity-80">(0 - 4)</div></button>
-                </div>
-            </div>
-
-            <div id="game-balloons" class="game-zone hidden space-y-4">
-                <div class="text-center text-sm font-bold tracking-wide text-cyan-300">🎈 BALLOONS BOMB: LESS POOL SURVIVES 🎈</div>
-                <div class="grid grid-cols-2 gap-4 h-40 items-center justify-center">
-                    <div onclick="placeBet('Balloon 1')" class="cursor-pointer p-4 bg-gradient-to-b from-pink-500 to-red-600 rounded-full w-28 h-28 mx-auto flex flex-col justify-center items-center font-bold text-center border-2 border-white/20 animate-bounce-slow shadow-xl">
-                        <span>Balloon 1</span>
-                    </div>
-                    <div onclick="placeBet('Balloon 2')" class="cursor-pointer p-4 bg-gradient-to-b from-cyan-400 to-blue-600 rounded-full w-28 h-28 mx-auto flex flex-col justify-center items-center font-bold text-center border-2 border-white/20 animate-bounce-slow shadow-xl" style="animation-delay: 0.5s;">
-                        <span>Balloon 2</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="game-spin" class="game-zone hidden space-y-4">
-                <div class="text-center text-sm font-bold tracking-wide text-yellow-300">🌀 SPIN TUNNEL: CHAKRI WHEEL 🌀</div>
-                <div class="relative flex justify-center py-4">
-                    <div id="wheel-graphic" class="w-32 h-32 rounded-full border-4 border-yellow-400 bg-gradient-to-r from-white via-blue-600 to-white animate-spin-slow shadow-2xl flex items-center justify-center text-black font-black text-xs">TAMPA</div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="placeBet('White')" class="py-3 bg-white text-black font-black rounded-xl shadow-md border-2 border-gray-300">WHITE</button>
-                    <button onclick="placeBet('Blue')" class="py-3 bg-blue-600 text-white font-black rounded-xl shadow-md border-2 border-blue-400">BLUE</button>
-                </div>
-            </div>
-
-            <div class="bg-black/30 p-4 rounded-xl border border-white/10 space-y-3">
-                <div class="flex justify-between items-center">
-                    <label class="text-xs text-gray-300">Enter Bet Amount (BHD):</label>
-                    <span class="text-xxs text-rose-400">3% Admin Tax Applicable</span>
-                </div>
-                <input type="number" id="bet-amount" value="1.0" step="0.5" class="w-full bg-black/60 border border-white/20 p-2 rounded-lg font-bold text-center text-yellow-400 focus:outline-none focus:border-pink-500">
-            </div>
-
-            <div class="bg-black/40 p-3 rounded-xl border border-white/5 space-y-2">
-                <div class="text-xs font-bold text-gray-300 border-b border-white/10 pb-1">📊 Last Period Outcomes History</div>
-                <div id="history-list" class="text-xs space-y-1 font-mono text-gray-400 max-h-24 overflow-y-auto">
-                    <div>Period ..00: <span class="text-green-400">BIG [7]</span> | Pool Saved Engine</div>
-                    <div>Period ..99: <span class="text-blue-400">SMALL [2]</span> | Pool Saved Engine</div>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-refer" class="tab-content hidden space-y-4">
-            <div class="bg-gradient-to-r from-blue-900 to-indigo-900 p-5 rounded-2xl border border-cyan-500/30 text-center">
-                <div class="text-sm text-gray-300">Your Unique 4-Digit Invite Code</div>
-                <div class="text-3xl font-black text-cyan-400 tracking-widest my-2">TMP4</div>
-                <p class="text-xs text-gray-400">Earn from your downline continuously up to 3 Levels deep.</p>
-            </div>
-            <div class="bg-black/30 p-4 rounded-xl space-y-2 text-sm">
-                <div class="font-bold border-b border-white/10 pb-1 text-yellow-400">🏆 Network Dynamic Level Commission</div>
-                <div class="flex justify-between text-xs py-1"><span>Level 1 Tracking (0.40% Variable)</span><span class="text-green-400">+0.000 BHD</span></div>
-                <div class="flex justify-between text-xs py-1"><span>Level 2 Tracking (0.10% Variable)</span><span class="text-green-400">+0.000 BHD</span></div>
-                <div class="flex justify-between text-xs py-1"><span>Level 3 Overview Structure</span><span class="text-gray-400">Active Logs</span></div>
-            </div>
-        </section>
-
-        <section id="tab-wallet" class="tab-content hidden space-y-4">
-            <div class="bg-black/40 p-4 rounded-xl border border-white/10 space-y-4">
-                <h3 class="text-md font-bold text-green-400">💸 Safe Global Gateways Withdrawal</h3>
-                <div class="space-y-2">
-                    <button onclick="triggerWithdrawal('PayPal')" class="w-full py-3 bg-gradient-to-r from-blue-600 to-sky-500 font-bold rounded-xl active:scale-98 transition-transform">Withdraw via PayPal</button>
-                    <button onclick="triggerWithdrawal('Stripe')" class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 font-bold rounded-xl active:scale-98 transition-transform">Withdraw via Stripe</button>
-                </div>
-                <div class="text-xxs text-gray-400 text-center">All manual requests forward directly inside the Master Panel for validation checks.</div>
-            </div>
-        </section>
-
-        <section id="tab-setting" class="tab-content hidden space-y-4">
-            <div class="bg-black/40 p-4 rounded-xl space-y-3">
-                <h3 class="font-bold text-sm text-gray-300">🌐 Switch Regional Language</h3>
-                <select id="lang-switch" class="w-full bg-black/60 border border-white/20 p-2 rounded-lg text-sm text-white">
-                    <option value="en">English (Default)</option>
-                    <option value="ur">Urdu (اردو)</option>
-                    <option value="ar">Arabic (العربية)</option>
-                </select>
-            </div>
-            <div class="bg-black/40 p-4 rounded-xl space-y-2 text-xs">
-                <h3 class="font-bold text-sm text-rose-400">🛠️ Official Customer Support</h3>
-                <p>Telegram: <a href="https://t.me/rihu2020" class="text-cyan-400 font-bold underline">@rihu2020</a></p>
-                <p>Helpline Call: <span class="text-yellow-400 font-bold">8709913752</span></p>
-            </div>
-        </section>
-    </main>
-
-    <nav class="fixed bottom-0 left-0 right-0 bg-black/90 border-t border-white/10 py-2 z-50">
-        <div class="max-w-md mx-auto flex justify-around text-center">
-            <button onclick="switchTab('games')" id="nav-games" class="flex-1 text-pink-500 font-bold text-xs flex flex-col items-center">🕹️<div>Games</div></button>
-            <button onclick="switchTab('refer')" id="nav-refer" class="flex-1 text-gray-400 font-bold text-xs flex flex-col items-center">👥<div>Refer</div></button>
-            <button onclick="switchTab('wallet')" id="nav-wallet" class="flex-1 text-gray-400 font-bold text-xs flex flex-col items-center">💳<div>Wallet</div></button>
-            <button onclick="switchTab('setting')" id="nav-setting" class="flex-1 text-gray-400 font-bold text-xs flex flex-col items-center">⚙️<div>Settings</div></button>
+        {/* 1. TAMPA HEADER LOGO SECTION */}
+        <div className="p-4 flex flex-col items-center border-b border-slate-100 bg-gradient-to-b from-slate-50 to-white">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-black tracking-wider text-teal-600">TAMPA</span>
+          </div>
+          <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">Connecting The Bay</p>
         </div>
-    </nav>
 
-    <div id="result-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center hidden z-50">
-        <div id="modal-box" class="p-8 rounded-3xl text-center max-w-xs w-full border transform scale-90 transition-all duration-300">
-            <h2 id="modal-title" class="text-3xl font-black mb-2">WIN !!</h2>
-            <p id="modal-desc" class="text-sm text-gray-200">Amount doubled safely inside balance wallet.</p>
+        {/* 2. WALLET BALANCE & DEPOSIT/WITHDRAWAL ROW */}
+        <div className="p-4 bg-white mx-4 my-3 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2 text-slate-500">
+              <WalletIcon className="w-4 h-4" />
+              <span className="text-xs font-semibold uppercase tracking-wider">Wallet Balance</span>
+            </div>
+            <button className="p-1 hover:bg-slate-100 rounded-full transition-colors">
+              <ArrowPathIcon className="w-4 h-4 text-slate-400" />
+            </button>
+          </div>
+          <div className="text-2xl font-bold text-slate-900 mb-4">${walletBalance.toFixed(2)}</div>
+          
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <button className="flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs tracking-wide transition-all shadow-sm shadow-teal-100">
+              <ArrowUpTrayIcon className="w-4 h-4" /> DEPOSIT
+            </button>
+            <button className="flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs tracking-wide transition-all shadow-sm shadow-rose-100">
+              <ArrowDownTrayIcon className="w-4 h-4" /> WITHDRAWAL
+            </button>
+          </div>
         </div>
+
+        {/* 3. TIMER / ENGAGEMENT ZONE */}
+        <div className="px-4 py-2 flex flex-col items-center">
+          <button 
+            onClick={startNewRound} 
+            disabled={isTimerActive}
+            className={`w-full py-3 rounded-2xl font-bold text-sm tracking-wide transition-all border ${
+              isTimerActive 
+                ? 'bg-slate-50 border-slate-200 text-teal-600' 
+                : 'bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100'
+            }`}
+          >
+            {isTimerActive ? `ROUND ACTIVE: ${timeLeft}s REMAINING` : 'CLICK TO START 25s ROUND'}
+          </button>
+        </div>
+
+        {/* 4. MAIN TAP BOXES & BETTING INPUTS */}
+        <div className="p-4 grid grid-cols-2 gap-4">
+          
+          {/* Box A (Left) */}
+          <button 
+            onClick={() => isTimerActive && setSelectedBox('A')}
+            disabled={!isTimerActive}
+            className={`relative p-5 rounded-2xl border-2 flex flex-col items-center justify-center min-h-[140px] transition-all ${
+              selectedBox === 'A' 
+                ? 'border-teal-500 bg-teal-50/50' 
+                : 'border-slate-200 bg-slate-50 hover:border-slate-300'
+            }`}
+          >
+            <span className="absolute top-2 left-3 text-[10px] font-black text-slate-400">BOX A</span>
+            {revealedMultA ? (
+              <span className="text-4xl font-extrabold text-teal-600 animate-bounce">{revealedMultA}</span>
+            ) : (
+              <span className="text-xs text-slate-400 font-medium">Tap to Pick Box A</span>
+            )}
+          </button>
+
+          {/* Box B (Right) */}
+          <button 
+            onClick={() => isTimerActive && setSelectedBox('B')}
+            disabled={!isTimerActive}
+            className={`relative p-5 rounded-2xl border-2 flex flex-col items-center justify-center min-h-[140px] transition-all ${
+              selectedBox === 'B' 
+                ? 'border-rose-500 bg-rose-50/50' 
+                : 'border-slate-200 bg-slate-50 hover:border-slate-300'
+            }`}
+          >
+            <span className="absolute top-2 right-3 text-[10px] font-black text-slate-400">BOX B</span>
+            {revealedMultB ? (
+              <span className="text-4xl font-extrabold text-rose-600 animate-bounce">{revealedMultB}</span>
+            ) : (
+              <span className="text-xs text-slate-400 font-medium">Tap to Pick Box B</span>
+            )}
+          </button>
+        </div>
+
+        {/* Bet Configuration Utility Row */}
+        <div className="px-4 pb-4">
+          <div className="flex gap-2 items-center">
+            <input 
+              type="number" 
+              placeholder="Enter Bet Amount" 
+              value={betAmount}
+              onChange={(e) => setBetAmount(e.target.value)}
+              disabled={!isTimerActive || !selectedBox}
+              className="flex-1 bg-slate-50 border border-slate-200 text-sm font-semibold rounded-xl px-3 py-2.5 focus:outline-none focus:border-slate-400 transition-colors disabled:opacity-60"
+            />
+            <div className="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-2.5 rounded-xl border border-slate-200">
+              {selectedBox ? `Selected: Box ${selectedBox}` : 'Select Box First'}
+            </div>
+          </div>
+        </div>
+
+        {/* 5. POPUP NOTIFICATION BANNER STATUS */}
+        {roundStatus !== 'betting' && roundStatus !== 'ended' && (
+          <div className={`mx-4 mb-4 p-3 rounded-xl flex items-center gap-3 animate-fade-in ${
+            roundStatus === 'won' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'
+          }`}>
+            <TrophyIcon className="w-5 h-5 flex-shrink-0" />
+            <div className="text-xs">
+              <span className="font-bold uppercase tracking-wider">{roundStatus === 'won' ? 'CONGRATULATIONS! ' : 'SO SAD! '}</span>
+              {roundStatus === 'won' ? 'You picked the highest multiplier score box!' : 'Your box score was lower this period.'}
+            </div>
+          </div>
+        )}
+
+        {/* 6. LAST 10 RESULTS HISTORY LIST */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Last 10 Tap Box Results</h3>
+          <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-50 text-slate-400 font-bold uppercase border-b border-slate-100 text-[10px] tracking-wider">
+                  <th className="p-2.5 text-center">Period No.</th>
+                  <th className="p-2.5 text-center">Box A Score</th>
+                  <th className="p-2.5 text-center">Box B Score</th>
+                  <th className="p-2.5 text-center">Highest Winner</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                {history.map((row, index) => (
+                  <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="p-2.5 text-center font-mono text-slate-500">{row.periodNo}</td>
+                    <td className={`p-2.5 text-center ${row.winningBox === 'A' ? 'text-teal-600 font-bold' : ''}`}>{row.multiplierA}</td>
+                    <td className={`p-2.5 text-center ${row.winningBox === 'B' ? 'text-rose-600 font-bold' : ''}`}>{row.multiplierB}</td>
+                    <td className="p-2.5 text-center">
+                      <span className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                        row.winningBox === 'A' ? 'bg-teal-50 text-teal-700' : 'bg-rose-50 text-rose-700'
+                      }`}>
+                        Box {row.winningBox} ({row.winnerScore})
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
     </div>
-
-    <script>
-        let currentTimerMax = 30;
-        let timeLeft = 30;
-        let balance = 100.000;
-        let selectedGame = 'bigly';
-        let isLocked = false;
-
-        // Dynamic Virtual Counter Pools (Anti-loss verification tracker)
-        let poolA = 0; // Big, Balloon 1, White
-        let poolB = 0; // Small, Balloon 2, Blue
-        let activeBetChoice = null;
-        let activeBetAmount = 0;
-
-        // Navigation Switching Logic
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            
-            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('text-pink-500'));
-            document.querySelectorAll('nav button').forEach(btn => btn.classList.add('text-gray-400'));
-            document.getElementById(`nav-${tabId}`).classList.add('text-pink-500');
-        }
-
-        // Sub Game Modules Switching Logic
-        function switchGame(gameId) {
-            selectedGame = gameId;
-            document.querySelectorAll('.game-zone').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`game-${gameId}`).classList.remove('hidden');
-            
-            document.querySelectorAll('[id^="btn-g-"]').forEach(btn => {
-                btn.classList.remove('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white');
-                btn.classList.add('text-gray-400');
-            });
-            document.getElementById(`btn-g-${gameId}`).classList.add('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white');
-            resetPoolsData();
-        }
-
-        function setTimerConfig(sec) {
-            currentTimerMax = sec;
-            timeLeft = sec;
-            resetPoolsData();
-        }
-
-        function resetPoolsData() {
-            poolA = Math.random() * 20; 
-            poolB = Math.random() * 20;
-            updatePoolUI();
-        }
-
-        function updatePoolUI() {
-            document.getElementById('pool-a-display').innerText = poolA.toFixed(3);
-            document.getElementById('pool-b-display').innerText = poolB.toFixed(3);
-        }
-
-        // Timer Loop Running 24/7 Engine
-        setInterval(() => {
-            if (timeLeft > 1) {
-                timeLeft--;
-                document.getElementById('game-timer').innerText = timeLeft < 10 ? '0' + timeLeft : timeLeft;
-                
-                // 3 Second Anti-Cheat Freeze Rule
-                if (timeLeft <= 3) {
-                    isLocked = true;
-                    document.getElementById('lock-notice').classList.remove('hidden');
-                } else {
-                    isLocked = false;
-                    document.getElementById('lock-notice').classList.add('hidden');
-                }
-            } else {
-                // Timer Hits 0: Trigger Server Result Simulation Loop
-                timeLeft = currentTimerMax;
-                executePeriodResultCalculation();
-            }
-        }, 1000);
-
-        // Player Bet Placements with 3% Admin Tax Rules Deductions
-        function placeBet(choice) {
-            if (isLocked) {
-                alert("Calculation in progress! Market Locked for 3 Seconds.");
-                return;
-            }
-            let amt = parseFloat(document.getElementById('bet-amount').value);
-            if (isNaN(amt) || amt <= 0 || amt > balance) {
-                alert("Invalid or Insufficient Balance verification failed!");
-                return;
-            }
-
-            // Deduct full amount from balance immediately
-            balance -= amt;
-            document.getElementById('wallet-balance').innerText = balance.toFixed(3);
-
-            // Calculate 3% Admin Service Fees Tax
-            let feeTax = amt * 0.03;
-            let finalNetBet = amt - feeTax;
-
-            activeBetChoice = choice;
-            activeBetAmount = finalNetBet;
-
-            // Route pool additions matching choice metrics
-            if (['Big', 'Balloon 1', 'White'].includes(choice)) {
-                poolA += finalNetBet;
-            } else {
-                poolB += finalNetBet;
-            }
-            updatePoolUI();
-            alert(`Bet successfully recorded on ${choice}!`);
-        }
-
-        // Admin Controlled Logic Matrix Execution (Less pool amount wins instantly)
-        function executePeriodResultCalculation() {
-            let winningSide = "";
-            let generatedLuckyDigit = 0;
-
-            // Enforce less money pool wins logic system metrics
-            if (poolA < poolB) {
-                winningSide = ['Big', 'Balloon 1', 'White'].includes(activeBetChoice) || activeBetChoice === null ? 'Side A Winner' : 'Side A';
-                generatedLuckyDigit = Math.floor(Math.random() * 5) + 5; // Big numbers (5-9)
-            } else {
-                winningSide = ['Small', 'Balloon 2', 'Blue'].includes(activeBetChoice) ? 'Side B Winner' : 'Side B';
-                generatedLuckyDigit = Math.floor(Math.random() * 5); // Small numbers (0-4)
-            }
-
-            // Check if player won
-            let baseCheckWin = false;
-            if (activeBetChoice !== null) {
-                if (['Big', 'Balloon 1', 'White'].includes(activeBetChoice) && poolA < poolB) baseCheckWin = true;
-                if (['Small', 'Balloon 2', 'Blue'].includes(activeBetChoice) && poolB < poolA) baseCheckWin = true;
-            }
-
-            // Animation Processing Popups UI Triggers
-            let modal = document.getElementById('result-modal');
-            let box = document.getElementById('modal-box');
-            modal.classList.remove('hidden');
-
-            if (baseCheckWin && activeBetAmount > 0) {
-                let prizeEarnings = activeBetAmount * 2;
-                balance += prizeEarnings;
-                document.getElementById('wallet-balance').innerText = balance.toFixed(3);
-
-                box.className = "p-8 rounded-3xl text-center max-w-xs w-full border bg-gradient-to-b from-green-600 to-emerald-900 border-green-400 shadow-2xl scale-100 transition-transform";
-                document.getElementById('modal-title').innerText = "🏆 WINNER!";
-                document.getElementById('modal-desc').innerText = `+${prizeEarnings.toFixed(3)} BHD added to your wallet!`;
-            } else {
-                box.className = "p-8 rounded-3xl text-center max-w-xs w-full border bg-gradient-to-b from-rose-700 to-red-950 border-rose-500 shadow-2xl scale-100 transition-transform";
-                document.getElementById('modal-title').innerText = "❌ LOST";
-                document.getElementById('modal-desc').innerText = activeBetChoice === null ? "No Active bets placed during this period." : "Better luck next time in Tampa!";
-            }
-
-            // 2 Seconds Display Rule Animation Clears
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                // Increment Period Serial Numbers Counter
-                let cp = parseInt(document.getElementById('current-period').innerText);
-                document.getElementById('current-period').innerText = cp + 1;
-                
-                // Clear state memory for next validation session
-                activeBetChoice = null;
-                activeBetAmount = 0;
-                resetPoolsData();
-            }, 2000);
-        }
-
-        function triggerWithdrawal(gateway) {
-            alert(`Withdrawal request via ${gateway} submitted to Panel queue for Admin Approval/Disallowed checks.`);
-        }
-    </script>
-</body>
-</html>
+  );
+}
