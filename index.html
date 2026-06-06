@@ -12,7 +12,7 @@
     <!-- Firebase SDK v9 Modules via CDN -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
         import { getDatabase, ref, set, push, onValue, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
         import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
 
@@ -27,34 +27,38 @@
             appId: "1:879977811304:web:0c70e28ddecf9d7528dadd"
         };
 
-        // Initialize Firebase
+        // Initialize Firebase Components
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
         const storage = getStorage(app);
 
-        // Global State variables
+        // Global State
         let currentUserData = null;
         let activeChatUserId = null;
+        let liveTimerInterval = null;
 
         window.onload = () => {
             initAppLogic();
+            // Start Global Timer Engine for Request Expiration Updates
+            liveTimerInterval = setInterval(updateLiveTimers, 1000);
         };
 
         function initAppLogic() {
-            // Monitor Auth State
+            // Monitor Live Auth State
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     onValue(ref(db, 'users/' + user.uid), (snapshot) => {
                         currentUserData = snapshot.val();
                         if (currentUserData) {
+                            // Update Top Header UI dynamically
+                            document.getElementById('user-header-avatar').src = currentUserData.avatar || "https://api.dicebear.com/7.x/adventurer/svg?seed=" + user.uid;
                             showScreen('main-app');
                             switchTab('friend');
                             loadGlobalExplorers();
                             loadIncomingRequests();
                             loadConnectedFriends();
                             loadStatuses();
-                            // Set Active State
                             update(ref(db, 'users/' + user.uid), { active: true });
                         }
                     });
@@ -64,7 +68,7 @@
                 }
             });
 
-            // Form Submit Bindings
+            // Form Submit Actions
             document.getElementById('register-form').onsubmit = handleRegister;
             document.getElementById('login-form').onsubmit = handleLogin;
             document.getElementById('match-form').onsubmit = handleSendMatchRequest;
@@ -74,7 +78,7 @@
         }
 
         // ==========================================
-        // AUTHENTICATION LOGIC
+        // AUTHENTICATION LOGIC (WITH AUTO-USERNAME)
         // ==========================================
         async function handleRegister(e) {
             e.preventDefault();
@@ -89,14 +93,13 @@
                 return;
             }
 
-            // Enforce automatic username@ format
+            // Enforce username@ format seamlessly
             const username = usernameInput.endsWith('@') ? usernameInput : usernameInput + '@';
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // Save extended profile data into Realtime Database
                 await set(ref(db, 'users/' + user.uid), {
                     uid: user.uid,
                     username: username,
@@ -105,7 +108,7 @@
                     avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=" + user.uid,
                     active: true
                 });
-                alert("Registration successful!");
+                alert("Registration Successful!");
             } catch (error) {
                 alert(error.message);
             }
@@ -130,7 +133,38 @@
         }
 
         // ==========================================
-        // TAB 1: FRIEND & MATCH ROUTING
+        // FIX: FIXED PROFILE PICTURE STORAGE UPLOAD
+        // ==========================================
+        window.triggerProfilePicSelect = function() {
+            document.getElementById('profile-file-input').click();
+        }
+
+        async function handleProfilePicUpload(e) {
+            const file = e.target.files[0];
+            if (!file || !auth.currentUser) return;
+
+            // Loader overlay indicators
+            document.getElementById('profile-avatar-loader').classList.remove('hidden');
+
+            const fileRef = sRef(storage, `profiles/${auth.currentUser.uid}/avatar.jpg`);
+            try {
+                const snapshot = await uploadBytes(fileRef, file);
+                const downloadUrl = await getDownloadURL(snapshot.ref);
+
+                // Update Database profile entry immediately
+                await update(ref(db, `users/${auth.currentUser.uid}`), { avatar: downloadUrl });
+                document.getElementById('user-header-avatar').src = downloadUrl;
+                
+                alert("Profile Photo Updated & Saved Successfully!");
+            } catch (err) {
+                alert("Upload Failed: " + err.message);
+            } finally {
+                document.getElementById('profile-avatar-loader').classList.add('hidden');
+            }
+        }
+
+        // ==========================================
+        // INSTANT MATCH ROUTING WITH EXPIRATION TIMER
         // ==========================================
         async function handleSendMatchRequest(e) {
             e.preventDefault();
@@ -143,6 +177,9 @@
             const funRequestRef = ref(db, 'fun_requests');
             const newRequestRef = push(funRequestRef);
 
+            // Calculate exact client/server target expiry stamp (24 Hours from now)
+            const expiryTimestamp = Date.now() + (24 * 60 * 60 * 1000);
+
             await set(newRequestRef, {
                 requestId: newRequestRef.key,
                 senderUid: auth.currentUser.uid,
@@ -152,101 +189,86 @@
                 targetGender: targetGender,
                 name: name,
                 topic: topic,
+                expiresAt: expiryTimestamp, // Fixed Expiry Target Marker
                 timestamp: serverTimestamp()
             });
 
-            alert("Request sent successfully to Fun Section!");
+            alert("Broadcasted instantly! Check inside Fun Section.");
             document.getElementById('match-form').reset();
+            switchTab('fun'); // Automatically jump to Fun screen to see the post
         }
 
-        function loadGlobalExplorers() {
-            onValue(ref(db, 'users'), (snapshot) => {
-                const container = document.getElementById('global-explorers-grid');
-                container.innerHTML = "";
-                const data = snapshot.val();
-                if (!data) return;
+        // Engine tracking dynamic countdown rendering loops
+        function updateLiveTimers() {
+            const timerElements = document.querySelectorAll('[data-expiry]');
+            const now = Date.now();
 
-                Object.values(data).forEach(user => {
-                    if (user.uid === auth.currentUser.uid) return; // Skip self
+            timerElements.forEach(el => {
+                const expiryTime = parseInt(el.getAttribute('data-expiry'));
+                const reqId = el.getAttribute('data-id');
+                const timeLeft = expiryTime - now;
 
-                    const card = document.createElement('div');
-                    card.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center relative flex flex-col items-center";
-                    card.innerHTML = `
-                        <div class="relative w-16 h-16 mb-2">
-                            <img src="${user.avatar}" class="w-full h-full rounded-full border bg-slate-50 object-cover" />
-                            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.active ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
-                        </div>
-                        <h5 class="font-bold text-slate-800 text-sm">${user.username}</h5>
-                        <p class="text-xs text-slate-400 mb-3 capitalize">${user.gender}</p>
-                        <button onclick="directMessage('${user.uid}')" class="mt-auto bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold py-2 px-4 rounded-xl transition-colors w-full">
-                            <i class="fa-solid fa-paper-plane mr-1"></i> Message
-                        </button>
-                    `;
-                    container.appendChild(card);
-                });
+                if (timeLeft <= 0) {
+                    el.innerText = "Expired";
+                    // Dynamic automatic self-deletion on expiration strike
+                    remove(ref(db, `fun_requests/${reqId}`));
+                } else {
+                    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    el.innerText = `${hours}h ${minutes}m ${seconds}s left`;
+                }
             });
         }
 
-        window.directMessage = async function(targetUid) {
-            // Instantly create friend connection in db and open chat
-            await set(ref(db, `friends/${auth.currentUser.uid}/${targetUid}`), true);
-            await set(ref(db, `friends/${targetUid}/${auth.currentUser.uid}`), true);
-            switchTab('addfriend');
-            openChatBox(targetUid);
-        }
-
-        // ==========================================
-        // TAB 4: FUN SECTION (REQUEST MANAGEMENT)
-        // ==========================================
         function loadIncomingRequests() {
             onValue(ref(db, 'fun_requests'), (snapshot) => {
                 const container = document.getElementById('fun-requests-list');
                 container.innerHTML = "";
                 const data = snapshot.val();
                 if (!data) {
-                    container.innerHTML = `<p class="text-center text-slate-400 text-sm py-8">No requests available</p>`;
+                    container.innerHTML = `<p class="text-center text-slate-400 text-sm py-8">No requests found inside Fun Board</p>`;
                     return;
                 }
 
                 Object.values(data).forEach(req => {
-                    // Filter based on user's selected permission choice if applicable
                     if (req.senderUid === auth.currentUser.uid) return;
 
-                    // Block check list filter can be handled here if implemented
-                    
                     const card = document.createElement('div');
                     card.className = "bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between";
                     card.innerHTML = `
                         <div class="flex items-center space-x-3">
-                            <img src="${req.senderAvatar}" class="w-12 h-12 rounded-full border bg-slate-50" />
+                            <img src="${req.senderAvatar}" class="w-12 h-12 rounded-full border bg-slate-50 object-cover" />
                             <div>
                                 <h5 class="text-sm font-bold text-slate-800">${req.name} (${req.senderUsername})</h5>
-                                <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-full capitalize mb-1">${req.senderGender}</span>
-                                <p class="text-xs text-indigo-600 font-medium">Topic: ${req.topic}</p>
+                                <div class="flex items-center space-x-2 mt-0.5">
+                                    <span class="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2 py-0.5 rounded-full capitalize">${req.senderGender}</span>
+                                    <span class="text-[11px] font-semibold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full" id="timer-${req.requestId}" data-id="${req.requestId}" data-expiry="${req.expiresAt}">Calculating...</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mt-1"><span class="text-slate-400 font-medium">Topic:</span> ${req.topic}</p>
                             </div>
                         </div>
-                        <div class="flex space-x-2">
-                            <button onclick="acceptRequest('${req.senderUid}', '${req.requestId}')" class="bg-emerald-500 hover:bg-emerald-600 text-white w-8 h-8 rounded-xl flex items-center justify-center transition-colors shadow-sm shadow-emerald-200">
-                                <i class="fa-solid fa-check text-xs"></i>
+                        <div class="flex space-x-1.5">
+                            <button onclick="acceptRequest('${req.senderUid}', '${req.requestId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white w-9 h-9 rounded-xl flex items-center justify-center transition-colors shadow-sm shadow-indigo-100">
+                                <i class="fa-solid fa-message text-xs"></i>
                             </button>
-                            <button onclick="deleteRequest('${req.requestId}')" class="bg-slate-100 hover:bg-slate-200 text-slate-500 w-8 h-8 rounded-xl flex items-center justify-center transition-colors">
-                                <i class="fa-solid fa-xmark text-xs"></i>
+                            <button onclick="deleteRequest('${req.requestId}')" class="bg-slate-100 hover:bg-slate-200 text-slate-500 w-9 h-9 rounded-xl flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
                             </button>
                         </div>
                     `;
                     container.appendChild(card);
                 });
+                updateLiveTimers();
             });
         }
 
         window.acceptRequest = async function(senderUid, requestId) {
-            // Establish mutual connection
             await set(ref(db, `friends/${auth.currentUser.uid}/${senderUid}`), true);
             await set(ref(db, `friends/${senderUid}/${auth.currentUser.uid}`), true);
-            // Clean up request from fun board
             await remove(ref(db, `fun_requests/${requestId}`));
-            alert("Request Accepted! Checked inside Add Friend.");
             switchTab('addfriend');
+            openChatBox(senderUid);
         }
 
         window.deleteRequest = async function(requestId) {
@@ -254,7 +276,7 @@
         }
 
         // ==========================================
-        // TAB 3: ADD FRIEND & LIVE CHAT (WITH DATA BLOCKS)
+        // FAST REAL-TIME EXPRESS CHAT ARCHITECTURE
         // ==========================================
         function loadConnectedFriends() {
             onValue(ref(db, `friends/${auth.currentUser.uid}`), (snapshot) => {
@@ -262,33 +284,31 @@
                 container.innerHTML = "";
                 const val = snapshot.val();
                 if (!val) {
-                    container.innerHTML = `<p class="text-center text-slate-400 text-sm py-8">No friends added yet</p>`;
+                    container.innerHTML = `<p class="text-center text-slate-400 text-sm py-8">No chats active. Explore Global Profiles to initiate message!</p>`;
                     return;
                 }
 
                 Object.keys(val).forEach(friendUid => {
-                    // Check if block state exists
                     onValue(ref(db, `users/${friendUid}`), (userSnap) => {
                         const user = userSnap.val();
                         if (!user) return;
 
                         const item = document.createElement('div');
-                        item.className = "flex items-center justify-between p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-100 transition-all cursor-pointer";
+                        item.className = "flex items-center justify-between p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-200 transition-all cursor-pointer";
                         item.onclick = () => openChatBox(friendUid);
                         item.innerHTML = `
                             <div class="flex items-center space-x-3">
-                                <div class="relative w-12 h-12">
-                                    <img src="${user.avatar}" class="w-full h-full rounded-full border bg-slate-50" />
+                                <div class="relative w-11 h-11">
+                                    <img src="${user.avatar}" class="w-full h-full rounded-full border bg-slate-50 object-cover" />
                                     <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.active ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
                                 </div>
                                 <div>
                                     <h5 class="text-sm font-bold text-slate-800">${user.username}</h5>
-                                    <p class="text-[11px] text-slate-400">${user.active ? 'Active now' : 'Offline'}</p>
+                                    <p class="text-[10px] ${user.active ? 'text-emerald-500 font-semibold' : 'text-slate-400'}">${user.active ? 'Active Now' : 'Offline'}</p>
                                 </div>
                             </div>
-                            <div class="flex space-x-3 text-slate-400" onclick="event.stopPropagation();">
-                                <button onclick="blockUser('${friendUid}')" title="Block User" class="hover:text-rose-500 transition-colors p-1"><i class="fa-solid fa-ban text-xs"></i></button>
-                                <button onclick="removeFriend('${friendUid}')" title="Remove Friend" class="hover:text-slate-600 transition-colors p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                            <div class="flex space-x-2 text-slate-400" onclick="event.stopPropagation();">
+                                <button onclick="blockUser('${friendUid}')" title="Block Profile" class="hover:text-rose-500 transition-colors p-2"><i class="fa-solid fa-user-slash text-xs"></i></button>
                             </div>
                         `;
                         container.appendChild(item);
@@ -303,12 +323,12 @@
             
             onValue(ref(db, `users/${friendUid}`), (snap) => {
                 const user = snap.val();
-                document.getElementById('chat-header-title').innerText = user ? user.username : "Chat";
+                document.getElementById('chat-header-title').innerText = user ? user.username : "Chat Channel";
             });
 
-            // Load structural chat string keys sequentially
             const chatSessionId = auth.currentUser.uid < friendUid ? `${auth.currentUser.uid}_${friendUid}` : `${friendUid}_${auth.currentUser.uid}`;
             
+            // Ultra fast database pipeline listener
             onValue(ref(db, `chats/${chatSessionId}`), (snapshot) => {
                 const msgContainer = document.getElementById('chat-messages-container');
                 msgContainer.innerHTML = "";
@@ -320,7 +340,7 @@
                     const msgWrapper = document.createElement('div');
                     msgWrapper.className = `flex ${isMe ? 'justify-end' : 'justify-start'} mb-3`;
                     
-                    let contentBlock = `<p class="text-sm">${msg.text}</p>`;
+                    let contentBlock = `<p class="text-sm leading-relaxed">${msg.text}</p>`;
                     if (msg.type === 'image') {
                         contentBlock = `<img src="${msg.imageUrl}" class="rounded-xl max-w-[200px] object-cover border shadow-sm" />`;
                     }
@@ -336,11 +356,6 @@
             });
         }
 
-        window.closeChat = function() {
-            document.getElementById('chat-window').classList.add('hidden');
-            activeChatUserId = null;
-        }
-
         async function handleSendMessage(e) {
             e.preventDefault();
             if (!activeChatUserId || !auth.currentUser) return;
@@ -352,14 +367,14 @@
             const chatSessionId = auth.currentUser.uid < activeChatUserId ? `${auth.currentUser.uid}_${activeChatUserId}` : `${activeChatUserId}_${auth.currentUser.uid}`;
             const newMsgRef = push(ref(db, `chats/${chatSessionId}`));
             
+            input.value = ""; // Optimistic UI clearing for instant user performance
+
             await set(newMsgRef, {
                 senderId: auth.currentUser.uid,
                 text: text,
                 type: 'text',
                 timestamp: serverTimestamp()
             });
-
-            input.value = "";
         }
 
         window.triggerChatImageUpload = function() {
@@ -385,29 +400,64 @@
                     timestamp: serverTimestamp()
                 });
             } catch (err) {
-                alert("Upload failed: " + err.message);
+                alert("Image Transmit Failed: " + err.message);
             }
         }
 
         window.blockUser = async function(uid) {
-            if (confirm("Are you sure you want to block this user?")) {
+            if (confirm("Block this user? Mutual connection will be destroyed.")) {
                 await remove(ref(db, `friends/${auth.currentUser.uid}/${uid}`));
                 await remove(ref(db, `friends/${uid}/${auth.currentUser.uid}`));
                 closeChat();
-                alert("User Blocked successfully.");
+                alert("Profile Blocked.");
             }
         }
 
-        window.removeFriend = async function(uid) {
-            if (confirm("Remove user from friends list?")) {
-                await remove(ref(db, `friends/${auth.currentUser.uid}/${uid}`));
-                await remove(ref(db, `friends/${uid}/${auth.currentUser.uid}`));
-                closeChat();
-            }
+        window.closeChat = function() {
+            document.getElementById('chat-window').classList.add('hidden');
+            activeChatUserId = null;
         }
 
         // ==========================================
-        // TAB 2: STATUS SYSTEM (25-HOUR AUTODELETE CLEANUP)
+        // GLOBAL EXPLORERS EXTRA SYSTEM HOOKS
+        // ==========================================
+        function loadGlobalExplorers() {
+            onValue(ref(db, 'users'), (snapshot) => {
+                const container = document.getElementById('global-explorers-grid');
+                container.innerHTML = "";
+                const data = snapshot.val();
+                if (!data) return;
+
+                Object.values(data).forEach(user => {
+                    if (user.uid === auth.currentUser.uid) return;
+
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center relative flex flex-col items-center";
+                    card.innerHTML = `
+                        <div class="relative w-16 h-16 mb-2">
+                            <img src="${user.avatar}" class="w-full h-full rounded-full border bg-slate-50 object-cover" />
+                            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.active ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
+                        </div>
+                        <h5 class="font-bold text-slate-800 text-sm truncate w-full">${user.username}</h5>
+                        <p class="text-[11px] text-slate-400 capitalize mb-3">${user.gender}</p>
+                        <button onclick="directMessage('${user.uid}')" class="mt-auto bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold py-2 px-3 rounded-xl transition-colors w-full">
+                            <i class="fa-solid fa-paper-plane mr-1"></i> Message
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        window.directMessage = async function(targetUid) {
+            await set(ref(db, `friends/${auth.currentUser.uid}/${targetUid}`), true);
+            await set(ref(db, `friends/${targetUid}/${auth.currentUser.uid}`), true);
+            switchTab('addfriend');
+            openChatBox(targetUid);
+        }
+
+        // ==========================================
+        // STATUS 25-HOUR TIMEOUT CONFIGURATION
         // ==========================================
         window.triggerStatusSelect = function() {
             document.getElementById('status-file-input').click();
@@ -419,7 +469,7 @@
 
             const fileRef = sRef(storage, `statuses/${auth.currentUser.uid}/${Date.now()}_${file.name}`);
             try {
-                alert("Uploading Status... Please wait");
+                alert("Uploading Live Status...");
                 const snapshot = await uploadBytes(fileRef, file);
                 const url = await getDownloadURL(snapshot.ref);
 
@@ -430,9 +480,9 @@
                     username: currentUserData.username,
                     avatar: currentUserData.avatar,
                     mediaUrl: url,
-                    timestamp: serverTimestamp() // Tracks initialization timestamp explicitly
+                    timestamp: serverTimestamp()
                 });
-                alert("Status uploaded successfully!");
+                alert("Status Live Now!");
             } catch (err) {
                 alert(err.message);
             }
@@ -445,10 +495,9 @@
                 const data = snapshot.val();
                 if (!data) return;
 
-                const cutoffTime = Date.now() - (25 * 60 * 60 * 1000); // 25 hours logic check limit
+                const cutoffTime = Date.now() - (25 * 60 * 60 * 1000); // 25 Hours strictly enforced
 
                 Object.values(data).forEach(status => {
-                    // Self cleanup routine if structural time exceeded 25 hours
                     if (status.timestamp && status.timestamp < cutoffTime) {
                         remove(ref(db, `statuses/${status.statusId}`));
                         return;
@@ -456,13 +505,16 @@
 
                     const element = document.createElement('div');
                     element.className = "aspect-[9/16] bg-slate-100 rounded-2xl overflow-hidden relative group cursor-pointer border shadow-sm";
-                    element.onclick = () => openStatusViewer(status.mediaUrl);
+                    element.onclick = () => {
+                        document.getElementById('status-modal-media').src = status.mediaUrl;
+                        document.getElementById('status-modal-viewer').classList.remove('hidden');
+                    };
                     element.innerHTML = `
-                        <img src="${status.mediaUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <img src="${status.mediaUrl}" class="w-full h-full object-cover" />
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         <div class="absolute bottom-3 left-3 flex items-center space-x-2">
-                            <img src="${status.avatar}" class="w-6 h-6 rounded-full border border-white bg-slate-200" />
-                            <span class="text-xs font-semibold text-white shadow-sm">${status.username}</span>
+                            <img src="${status.avatar}" class="w-6 h-6 rounded-full border border-white object-cover" />
+                            <span class="text-xs font-semibold text-white truncate max-w-[80px]">${status.username}</span>
                         </div>
                     `;
                     container.appendChild(element);
@@ -470,44 +522,7 @@
             });
         }
 
-        window.openStatusViewer = function(url) {
-            const modal = document.getElementById('status-modal-viewer');
-            document.getElementById('status-modal-media').src = url;
-            modal.classList.remove('hidden');
-        }
-
-        window.closeStatusViewer = function() {
-            document.getElementById('status-modal-viewer').add('hidden');
-        }
-
-        // ==========================================
-        // PROFILE PICTURE UPDATE UPLOAD
-        // ==========================================
-        window.triggerProfilePicSelect = function() {
-            document.getElementById('profile-file-input').click();
-        }
-
-        async function handleProfilePicUpload(e) {
-            const file = e.target.files[0];
-            if (!file || !auth.currentUser) return;
-
-            const fileRef = sRef(storage, `profiles/${auth.currentUser.uid}`);
-            try {
-                alert("Updating avatar picture...");
-                const snapshot = await uploadBytes(fileRef, file);
-                const url = await getDownloadURL(snapshot.ref);
-
-                await update(ref(db, `users/${auth.currentUser.uid}`), { avatar: url });
-                document.getElementById('user-header-avatar').src = url;
-                alert("Profile avatar updated successfully!");
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-
-        // ==========================================
-        // SYSTEM NAVIGATION HOOKS
-        // ==========================================
+        // NAVIGATION SWITCHER CONTROL ENGINE
         window.switchTab = function(tabId, element) {
             const tabs = document.querySelectorAll('.tab-content');
             tabs.forEach(tab => tab.classList.add('hidden'));
@@ -519,8 +534,7 @@
             if (element) {
                 element.classList.replace('text-slate-400', 'text-indigo-600');
             } else {
-                // Default fallback highlighting matching structural tab context
-                const targetBtn = document.querySelector(`[onclick*="switchTab('${tabId}'"]`);
+                const targetBtn = document.querySelector(`[onclick*="switchTab('${tabId}')"]`);
                 if (targetBtn) targetBtn.classList.replace('text-slate-400', 'text-indigo-600');
             }
         }
@@ -540,186 +554,172 @@
                 document.getElementById('login-form-container').classList.remove('hidden');
             }
         }
-
     </script>
     <style>
-        body { background-color: #f8fafc; }
+        body { background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body class="text-slate-700 min-h-screen flex justify-center selection:bg-indigo-100">
 
-    <!-- Primary App Frame (Mobile Viewport Engine Simulation Container) -->
-    <div class="w-full max-w-md bg-white min-h-screen flex flex-col shadow-xl relative border-x border-slate-100">
+    <!-- Primary Mobile Canvas frame wrapper -->
+    <div class="w-full max-w-md bg-white min-h-screen flex flex-col shadow-2xl relative border-x border-slate-100">
         
         <!-- ========================================== -->
-        <!-- SCREEN 1: COMPREHENSIVE AUTH ENTRIES       -->
+        <!-- SCREEN 1: LOGIN & SIGNUP                   -->
         <!-- ========================================== -->
         <div id="auth-screen" class="hidden flex-1 flex flex-col justify-center px-6 py-12 bg-slate-50">
-            <div class="text-center mb-8">
-                <h1 class="text-4xl font-black tracking-tight text-indigo-600">Namta</h1>
-                <p class="text-slate-500 text-xs mt-1.5 uppercase font-semibold tracking-wider">International Friendship Network</p>
+            <!-- Premium Text Logo Integration -->
+            <div class="text-center mb-8 flex flex-col items-center">
+                <div class="w-12 h-12 bg-gradient-to-tr from-indigo-600 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100 rotate-12 mb-3">
+                    <i class="fa-solid fa-globe text-white text-xl -rotate-12"></i>
+                </div>
+                <h1 class="text-3xl font-black tracking-tight text-slate-900 leading-none">Namta</h1>
+                <p class="text-xs font-bold text-pink-500 tracking-wider uppercase mt-1">Global Connect</p>
             </div>
 
-            <!-- Registration Container -->
+            <!-- Sign Up Card Box Component -->
             <div id="register-form-container" class="bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
                 <h2 class="text-xl font-bold text-slate-800 mb-5">Create Account</h2>
                 <form id="register-form" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Username (e.g., aayu)</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Username (e.g., aayu)</label>
                         <input type="text" id="reg-username" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="username">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Email Address</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Email Address</label>
                         <input type="email" id="reg-email" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="yourname@gmail.com">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Select Gender</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Select Gender</label>
                         <select id="reg-gender" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors">
                             <option value="boy">Boy</option>
                             <option value="girl">Girl</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Password</label>
                         <input type="password" id="reg-password" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Confirm Password</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Confirm Password</label>
                         <input type="password" id="reg-confirm" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-2xl transition-all shadow-md shadow-indigo-100 mt-2">Sign Up</button>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-2xl transition-all shadow-md mt-2">Sign Up</button>
                 </form>
                 <p class="text-xs text-center text-slate-500 mt-4">Already registered? <span onclick="showAuthForm('login')" class="text-indigo-600 font-bold cursor-pointer underline">Log In</span></p>
             </div>
 
-            <!-- Login Container -->
+            <!-- Login Card Box Component -->
             <div id="login-form-container" class="hidden bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
                 <h2 class="text-xl font-bold text-slate-800 mb-5">Welcome Back</h2>
                 <form id="login-form" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Email Address</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Email Address</label>
                         <input type="email" id="login-email" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="yourname@gmail.com">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Password</label>
                         <input type="password" id="login-password" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-2xl transition-all shadow-md shadow-indigo-100 mt-2">Log In</button>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-2xl transition-all shadow-md mt-2">Log In</button>
                 </form>
                 <p class="text-xs text-center text-slate-500 mt-4">New here? <span onclick="showAuthForm('register')" class="text-indigo-600 font-bold cursor-pointer underline">Create Account</span></p>
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- SCREEN 2: NATIVE SYSTEM CORE DASHBOARD     -->
+        <!-- SCREEN 2: MAIN APP ECOSYSTEM LAYER         -->
         <!-- ========================================== -->
         <div id="main-app" class="hidden flex-1 flex flex-col h-full overflow-hidden">
             
-            <!-- Global Top Bar Layout Component Frame Header -->
-            <header class="px-4 py-4 border-b border-slate-100 bg-white sticky top-0 z-40 flex justify-between items-center shadow-sm">
-                <span class="text-2xl font-black tracking-tight text-indigo-600">Namta</span>
+            <!-- App Header Container (With Inline Custom Logo Component) -->
+            <header class="px-4 py-3 border-b border-slate-100 bg-white sticky top-0 z-40 flex justify-between items-center shadow-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-tr from-indigo-600 to-pink-500 rounded-xl flex items-center justify-center shadow-md rotate-12">
+                        <i class="fa-solid fa-globe text-white text-sm -rotate-12"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-black tracking-tight text-slate-900 leading-none">Namta</span>
+                        <span class="text-[8px] font-bold text-pink-500 tracking-wider uppercase mt-0.5">Global Connect</span>
+                    </div>
+                </div>
                 <div class="flex items-center space-x-3">
-                    <button onclick="handleLogout()" title="Logout" class="text-slate-400 hover:text-rose-500 transition-colors p-1"><i class="fa-solid fa-arrow-right-from-bracket text-lg"></i></button>
+                    <button onclick="handleLogout()" title="Logout App" class="text-slate-400 hover:text-rose-500 transition-colors p-2"><i class="fa-solid fa-arrow-right-from-bracket text-base"></i></button>
                     <input type="file" id="profile-file-input" accept="image/*" class="hidden">
-                    <div onclick="triggerProfilePicSelect()" class="w-9 h-9 rounded-full bg-slate-100 p-0.5 border cursor-pointer group relative">
+                    <div onclick="triggerProfilePicSelect()" class="w-10 h-10 rounded-full bg-slate-150 p-0.5 border border-slate-200 cursor-pointer relative group">
                         <img id="user-header-avatar" src="" class="w-full h-full rounded-full bg-slate-200 object-cover" alt="Profile">
-                        <div class="absolute inset-0 bg-black/40 rounded-full hidden group-hover:flex items-center justify-center"><i class="fa-solid fa-camera text-[10px] text-white"></i></div>
+                        <!-- Upload Loader Animation Indicator overlay -->
+                        <div id="profile-avatar-loader" class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center hidden">
+                            <i class="fa-solid fa-circle-notch animate-spin text-white text-xs"></i>
+                        </div>
+                        <div class="absolute inset-0 bg-black/30 rounded-full hidden group-hover:flex items-center justify-center">
+                            <i class="fa-solid fa-camera text-[10px] text-white"></i>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <!-- Primary View Navigation Space Area Routing Contents -->
+            <!-- Scrollable Router Body View -->
             <main class="flex-1 overflow-y-auto pb-24 px-4 py-4">
 
-                <!-- TAB 1: FRIENDS INTERACTION SUB-PANEL DASHBOARD -->
+                <!-- TAB 1: FRIEND BOARD PANEL -->
                 <div id="tab-friend" class="tab-content space-y-6">
-                    <form id="match-form" class="bg-indigo-50/50 p-5 rounded-3xl border border-indigo-100/50 shadow-sm space-y-3">
-                        <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-1.5"></i>Broadcast Match Parameters</h3>
+                    <form id="match-form" class="bg-indigo-50/40 p-5 rounded-3xl border border-indigo-100/60 shadow-sm space-y-3">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center"><i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-2"></i>Find International Friends</h3>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="match-name" required placeholder="Display Name" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                            <input type="text" id="match-name" required placeholder="Your Name" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
                             <select id="match-gender" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
                                 <option value="any">Any Gender</option>
                                 <option value="boy">Boy Only</option>
                                 <option value="girl">Girl Only</option>
                             </select>
                         </div>
-                        <input type="text" id="match-topic" required placeholder="What do you want to talk about? (e.g., Gaming)" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-all shadow-sm">Send to Fun Section</button>
+                        <input type="text" id="match-topic" required placeholder="Topic: Talk about anything... (e.g., K-Pop, Anime)" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all shadow-sm">Send Request Instantly</button>
                     </form>
 
                     <div>
-                        <h4 class="text-xs font-bold text-slate-400 mb-3 tracking-wider uppercase">Global Profiles Available</h4>
-                        <div id="global-explorers-grid" class="grid grid-cols-2 gap-3">
-                            <!-- Dynamic Content Rendered Here -->
-                        </div>
+                        <h4 class="text-xs font-bold text-slate-400 mb-3 tracking-wider uppercase">Global Explorers Online</h4>
+                        <div id="global-explorers-grid" class="grid grid-cols-2 gap-3"></div>
                     </div>
                 </div>
 
-                <!-- TAB 2: EXPLICIT CHRONOLOGICAL MOMENT STATUS PANEL -->
+                <!-- TAB 2: LIVE STORIES STATUS HUB -->
                 <div id="tab-status" class="tab-content hidden space-y-5">
-                    <input type="file" id="status-file-input" accept="image/*,video/*" class="hidden">
+                    <input type="file" id="status-file-input" accept="image/*" class="hidden">
                     <div onclick="triggerStatusSelect()" class="flex items-center space-x-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-indigo-100 transition-all">
-                        <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 text-lg shadow-sm"><i class="fa-solid fa-plus"></i></div>
+                        <div class="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 text-base shadow-sm"><i class="fa-solid fa-camera"></i></div>
                         <div>
                             <p class="text-sm font-bold text-slate-800">Add a New Status</p>
-                            <p class="text-xs text-slate-400">Disappears automatically after 25 hours</p>
+                            <p class="text-xs text-slate-400">Auto deletes completely after 25 hours</p>
                         </div>
                     </div>
-
                     <div>
-                        <h4 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Recent Live Stories</h4>
-                        <div id="statuses-grid-view" class="grid grid-cols-2 gap-3">
-                            <!-- Dynamic Status Media Output Blocks -->
-                        </div>
+                        <h4 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Recent Live Moments</h4>
+                        <div id="statuses-grid-view" class="grid grid-cols-2 gap-3"></div>
                     </div>
                 </div>
 
-                <!-- TAB 3: MUTUAL CHAT CHANNELS LIST CONNECTED -->
+                <!-- TAB 3: MUTUAL FRIENDS & SECURE EXPRESS CHATS -->
                 <div id="tab-addfriend" class="tab-content hidden space-y-3">
-                    <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Active Chat Channels</h4>
-                    <div id="connected-friends-list" class="space-y-2">
-                        <!-- Friend List Node Objects Rendered Dynamically -->
-                    </div>
+                    <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Active Chat Connections</h4>
+                    <div id="connected-friends-list" class="space-y-2"></div>
                 </div>
 
-                <!-- TAB 4: FUN ROUTING INCOMING INTERFACES HUB -->
+                <!-- TAB 4: FUN BROADCAST SECTION (INCOMING TICKER CHANNELS) -->
                 <div id="tab-fun" class="tab-content hidden space-y-3">
-                    <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Live Match Boards Requests</h4>
-                    <div id="fun-requests-list" class="space-y-2">
-                        <!-- Structural Node Request Arrays -->
-                    </div>
+                    <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Live Fun Requests (24h Expiry)</h4>
+                    <div id="fun-requests-list" class="space-y-2"></div>
                 </div>
 
             </main>
 
             <!-- ========================================== -->
-            <!-- LIVE INTERACTIVE OVERLAY SUB-SYSTEM CHAT   -->
+            <!-- STICKY STRUCTURAL BOTTOM TAB NAVIGATION   -->
             <!-- ========================================== -->
-            <div id="chat-window" class="hidden absolute inset-0 bg-white z-50 flex flex-col">
-                <header class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                    <div class="flex items-center space-x-3">
-                        <button onclick="closeChat()" class="text-slate-500 hover:text-slate-800 p-1"><i class="fa-solid fa-chevron-left text-lg"></i></button>
-                        <h4 id="chat-header-title" class="font-bold text-slate-800 text-base">Username</h4>
-                    </div>
-                    <span class="text-xs font-medium text-emerald-500 bg-emerald-50 px-2 py-1 rounded-full">Real Player <i class="fa-solid fa-shield-checkmark ml-0.5"></i></span>
-                </header>
-                <!-- Messages Body -->
-                <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50"></div>
-                <!-- Chat Action Form Footer Controls -->
-                <form id="chat-form" class="p-3 border-t bg-white flex items-center space-x-2">
-                    <input type="file" id="chat-image-input" accept="image/*" class="hidden" onchange="handleChatImageUpload(event)">
-                    <button type="button" onclick="triggerChatImageUpload()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 w-10 h-10 rounded-xl flex items-center justify-center transition-colors"><i class="fa-solid fa-image text-sm"></i></button>
-                    <input type="text" id="chat-input-field" required placeholder="Type message..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-500">
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-sm shadow-indigo-200"><i class="fa-solid fa-paper-plane text-sm"></i></button>
-                </form>
-            </div>
-
-            <!-- ========================================== -->
-            <!-- STICKY STRUCTURAL TAB CONTAINER NAVIGATION -->
-            <!-- ========================================== -->
-            <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-lg px-2 py-2 flex justify-around items-center z-40">
+            <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-xl px-2 py-2 flex justify-around items-center z-40">
                 <button onclick="switchTab('friend', this)" class="nav-btn text-indigo-600 flex flex-col items-center py-2 px-4 rounded-xl transition-all">
                     <i class="fa-solid fa-user-group text-lg"></i>
                     <span class="text-[10px] font-bold mt-1">Friend</span>
@@ -732,21 +732,40 @@
                     <i class="fa-solid fa-message text-lg"></i>
                     <span class="text-[10px] font-bold mt-1">Add Friend</span>
                 </button>
-                <button onclick="switchTab('fun', this)" class="nav-btn text-slate-400 flex flex-col items-center py-2 px-4 rounded-xl transition-all relative">
+                <button onclick="switchTab('fun', this)" class="nav-btn text-slate-400 flex flex-col items-center py-2 px-4 rounded-xl transition-all">
                     <i class="fa-solid fa-bolt text-lg"></i>
                     <span class="text-[10px] font-bold mt-1">Fun</span>
                 </button>
             </nav>
 
+            <!-- ========================================== -->
+            <!-- LIVE OVERLAY SUB-SYSTEM CHAT CONSOLE       -->
+            <!-- ========================================== -->
+            <div id="chat-window" class="hidden absolute inset-0 bg-white z-50 flex flex-col">
+                <header class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50 shadow-sm">
+                    <div class="flex items-center space-x-3">
+                        <button onclick="closeChat()" class="text-slate-500 hover:text-slate-800 p-1"><i class="fa-solid fa-chevron-left text-base"></i></button>
+                        <h4 id="chat-header-title" class="font-bold text-slate-800 text-sm">Username</h4>
+                    </div>
+                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Real Player <i class="fa-solid fa-user-check ml-0.5"></i></span>
+                </header>
+                <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/40"></div>
+                <!-- Chat Actions Input Component Panel footer -->
+                <form id="chat-form" class="p-3 border-t bg-white flex items-center space-x-2">
+                    <input type="file" id="chat-image-input" accept="image/*" class="hidden">
+                    <button type="button" onclick="triggerChatImageUpload()" class="bg-slate-50 border hover:bg-slate-100 text-slate-400 w-10 h-10 rounded-xl flex items-center justify-center transition-colors"><i class="fa-solid fa-image text-sm"></i></button>
+                    <input type="text" id="chat-input-field" required placeholder="Type message..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-md shadow-indigo-100"><i class="fa-solid fa-paper-plane text-sm"></i></button>
+                </form>
+            </div>
+
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- OVERLAY: STATUS FULL-SCREEN DISPLAY MODAL  -->
-    <!-- ========================================== -->
+    <!-- GLOBAL TIMEOUT POPUP VIEWER MODAL CONTAINER FOR OVERLAYS -->
     <div id="status-modal-viewer" class="hidden fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center p-4" onclick="this.classList.add('hidden')">
         <button class="absolute top-4 right-4 text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
-        <img id="status-modal-media" src="" class="max-w-full max-h-[85vh] rounded-2xl object-contain shadow-2xl">
+        <img id="status-modal-media" src="" class="max-w-full max-h-[85vh] rounded-3xl object-contain shadow-2xl">
     </div>
 
 </body>
