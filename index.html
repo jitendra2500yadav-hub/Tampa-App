@@ -9,8 +9,8 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
-        import { getDatabase, ref, set, push, onValue, update, remove, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
         import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
 
         // Firebase Production Configuration
@@ -32,7 +32,7 @@
 
         // App States
         let currentUserData = null;
-        let activeChatFriendId = null; // Storing the 6-digit or UID connection
+        let activeChatFriendId = null; 
         let liveTimerEngine = null;
 
         window.onload = () => {
@@ -52,7 +52,7 @@
                             document.getElementById('user-header-id').innerText = currentUserData.uniqueId;
                             
                             showScreen('main-app');
-                            switchTab('friend');
+                            switchTab('friend'); // Default opening tab
                             loadGlobalExplorers();
                             loadFunBroadcasts();
                             loadConnectedChats();
@@ -80,7 +80,7 @@
         // AUTH ENGINE + 6-DIGIT UNIQUE ID GENERATOR
         // ==========================================
         function generateUniqueId() {
-            return 'NM' + Math.floor(1000 + Math.random() * 9000); // Generates premium token like NM8492
+            return 'NM' + Math.floor(1000 + Math.random() * 9000); 
         }
 
         async function handleRegister(e) {
@@ -94,7 +94,6 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // Save Master Record
                 await set(ref(db, 'users/' + user.uid), {
                     uid: user.uid,
                     uniqueId: uniqueId,
@@ -104,7 +103,6 @@
                     active: true
                 });
                 
-                // Reverse Mapping for ID Queries
                 await set(ref(db, 'id_mapping/' + uniqueId), user.uid);
                 alert(`Account Verified! Your Unique ID is: ${uniqueId}`);
             } catch (error) {
@@ -219,7 +217,7 @@
         }
 
         // ==========================================
-        // FUN SECTION INSTANT ROUTING + TTL TIMERS
+        // FIXED: FUN SECTION INSTANT ROUTING + TTL TIMERS
         // ==========================================
         async function handleFunBroadcastRequest(e) {
             e.preventDefault();
@@ -227,11 +225,12 @@
 
             const name = document.getElementById('match-name').value.trim();
             const topic = document.getElementById('match-topic').value.trim();
-            const durationHrs = parseInt(document.getElementById('match-timer-config').value); // 1 or 2 Hours
+            const durationHrs = parseInt(document.getElementById('match-timer-config').value); 
 
             const targetExpiry = Date.now() + (durationHrs * 60 * 60 * 1000);
             const funRef = push(ref(db, 'fun_requests'));
 
+            // Database me push
             await set(funRef, {
                 requestId: funRef.key,
                 senderUid: auth.currentUser.uid,
@@ -242,9 +241,10 @@
                 expiresAt: targetExpiry
             });
 
-            alert(`Broadcast Sent Instantly under ID: ${currentUserData.uniqueId}`);
             document.getElementById('match-form').reset();
-            switchTab('fun');
+            
+            // CRITICAL FIX: Form submit hote hi instant "Fun" tab par redirection
+            switchTab('fun'); 
         }
 
         function executeGlobalTimerSync() {
@@ -257,7 +257,7 @@
                 const diff = targetTime - rightNow;
 
                 if (diff <= 0) {
-                    el.innerText = "Closing Link...";
+                    el.innerText = "Expired";
                     remove(ref(db, `fun_requests/${id}`));
                 } else {
                     const hrs = Math.floor(diff / (1000 * 60 * 60));
@@ -401,7 +401,7 @@
         }
 
         // ==========================================
-        // HIGH PERFORMANCE IN-CHAT TRANSLATION
+        // IN-CHAT LIVE TRANSLATION ENGINE
         // ==========================================
         window.translateNode = async function(btnElement) {
             const textNode = btnElement.parentElement.querySelector('.text-msg-body');
@@ -409,7 +409,6 @@
             
             btnElement.innerText = "Translating...";
             
-            // Premium Free Public Cloud Translation Endpoint integration
             try {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=hi&dt=t&q=${encodeURIComponent(originalText)}`);
                 const out = await res.json();
@@ -428,7 +427,7 @@
         }
 
         // ==========================================
-        // ENGINE FRAME NAVIGATION CONFIGURES
+        // UI TABS AND DISCOVERY CONFIGURATION
         // ==========================================
         function loadGlobalExplorers() {
             onValue(ref(db, 'users'), (snapshot) => {
@@ -501,11 +500,11 @@
                     <i class="fa-solid fa-globe text-white text-lg -rotate-12"></i>
                 </div>
                 <h1 class="text-2xl font-black text-slate-900 leading-none">Namta</h1>
-                <p class="text-[9px] font-bold text-pink-500 tracking-wider uppercase mt-1">6-Digit Secure Protocol</p>
+                <p class="text-[9px] font-bold text-pink-500 tracking-wider uppercase mt-1">Secure International Bridge</p>
             </div>
 
             <div id="register-form-container" class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                <h2 class="text-lg font-bold text-slate-800 mb-4">Register Member ID</h2>
+                <h2 class="text-lg font-bold text-slate-800 mb-4">Register Unique ID</h2>
                 <form id="register-form" class="space-y-3.5">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Email Connection</label>
@@ -522,9 +521,9 @@
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Security Code</label>
                         <input type="password" id="reg-password" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500" placeholder="••••••••">
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-md">Register Now</button>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-md">Register Code</button>
                 </form>
-                <p class="text-xs text-center text-slate-400 mt-4">Registered? <span onclick="showAuthForm('login')" class="text-indigo-600 font-bold cursor-pointer">Login here</span></p>
+                <p class="text-xs text-center text-slate-400 mt-4">Already an ID? <span onclick="showAuthForm('login')" class="text-indigo-600 font-bold cursor-pointer">Login here</span></p>
             </div>
 
             <div id="login-form-container" class="hidden bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
