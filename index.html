@@ -9,11 +9,11 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
         import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
 
-        // Firebase Production Configuration
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCfwH6JKXKbCWrXsXm1yDr7GNIDqmawtHg",
             authDomain: "namta-812b4.firebaseapp.com",
@@ -230,7 +230,7 @@
             const targetExpiry = Date.now() + (durationHrs * 60 * 60 * 1000);
             const funRef = push(ref(db, 'fun_requests'));
 
-            // Database me push
+            // Database mein request push karein
             await set(funRef, {
                 requestId: funRef.key,
                 senderUid: auth.currentUser.uid,
@@ -243,7 +243,7 @@
 
             document.getElementById('match-form').reset();
             
-            // CRITICAL FIX: Form submit hote hi instant "Fun" tab par redirection
+            // INSTANT FIX: Data push hote hi user ko 'Fun Tab' par redirect karein
             switchTab('fun'); 
         }
 
