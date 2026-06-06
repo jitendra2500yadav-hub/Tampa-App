@@ -1,258 +1,265 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowPathIcon, WalletIcon, ArrowUpTrayIcon, ArrowDownTrayIcon, TrophyIcon } from '@heroicons/react/24/outline';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namta - Connect Globally</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Smooth transitions for tabs */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen font-sans antialiased flex justify-center">
 
-// Mock types for project consistency
-interface GameResult {
-  periodNo: string;
-  winningBox: 'A' | 'B';
-  multiplierA: string;
-  multiplierB: string;
-  winnerScore: string;
-}
-
-export default function TapBoxGameView() {
-  // Game States
-  const [walletBalance, setWalletBalance] = useState<number>(120.50);
-  const [timeLeft, setTimeLeft] = useState<number>(25);
-  const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
-  const [betAmount, setBetAmount] = useState<string>('');
-  const [selectedBox, setSelectedBox] = useState<'A' | 'B' | null>(null);
-  
-  // Post-round Reveal States
-  const [revealedMultA, setRevealedMultA] = useState<string | null>(null);
-  const [revealedMultB, setRevealedMultB] = useState<string | null>(null);
-  const [roundStatus, setRoundStatus] = useState<'betting' | 'won' | 'lost' | 'ended'>('betting');
-
-  // Last 10 Results History Data
-  const [history, setHistory] = useState<GameResult[]>([
-    { periodNo: '1045', winningBox: 'B', multiplierA: '1x', multiplierB: '3x', winnerScore: '3x' },
-    { periodNo: '1044', winningBox: 'A', multiplierA: '2x', multiplierB: '1x', winnerScore: '2x' },
-    { periodNo: '1042', winningBox: 'B', multiplierA: '5x', multiplierB: '6x', winnerScore: '6x' },
-    { periodNo: '1041', winningBox: 'B', multiplierA: '1x', multiplierB: '3x', winnerScore: '3x' },
-    { periodNo: '1040', winningBox: 'A', multiplierA: '4x', multiplierB: '1x', winnerScore: '4x' },
-    { periodNo: '1039', winningBox: 'B', multiplierA: '1x', multiplierB: '5x', winnerScore: '5x' },
-    { periodNo: '1037', winningBox: 'A', multiplierA: '2x', multiplierB: '1x', winnerScore: '2x' },
-    { periodNo: '1036', winningBox: 'B', multiplierA: '3x', multiplierB: '4x', winnerScore: '4x' },
-    { periodNo: '1035', winningBox: 'A', multiplierA: '5x', multiplierB: '2x', winnerScore: '5x' },
-    { periodNo: '1034', winningBox: 'B', multiplierA: '1x', multiplierB: '3x', winnerScore: '3x' },
-  ]);
-
-  // 25 Seconds Countdown Timer Logic
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isTimerActive && timeLeft > 0) {
-      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-    } else if (timeLeft === 0 && isTimerActive) {
-      handleRoundEnd();
-    }
-    return () => clearTimeout(timer);
-  }, [timeLeft, isTimerActive]);
-
-  const startNewRound = () => {
-    setTimeLeft(25);
-    setIsTimerActive(true);
-    setRevealedMultA(null);
-    setRevealedMultB(null);
-    setRoundStatus('betting');
-  };
-
-  const handleRoundEnd = () => {
-    setIsTimerActive(false);
-    
-    // Simulate Random Multiplier outcome on end (e.g., 4x vs 5x)
-    const multA = Math.floor(Math.random() * 5 + 1) + 'x';
-    const multB = Math.floor(Math.random() * 5 + 1) + 'x';
-    
-    setRevealedMultA(multA);
-    setRevealedMultB(multB);
-    
-    const numA = parseInt(multA);
-    const numB = parseInt(multB);
-    const winningSide = numA > numB ? 'A' : 'B';
-
-    // Check Win/Loss conditions if user placed a bet
-    if (selectedBox) {
-      if (selectedBox === winningSide) {
-        setRoundStatus('won');
-        const winFactor = winningSide === 'A' ? numA : numB;
-        setWalletBalance(prev => prev + (parseFloat(betAmount || '0') * winFactor));
-      } else {
-        setRoundStatus('lost');
-        setWalletBalance(prev => prev - parseFloat(betAmount || '0'));
-      }
-    } else {
-      setRoundStatus('ended');
-    }
-
-    // Append to History List
-    const newPeriod = (parseInt(history[0].periodNo) + 1).toString();
-    setHistory(prev => [
-      {
-        periodNo: newPeriod,
-        winningBox: winningSide,
-        multiplierA: multA,
-        multiplierB: multB,
-        winnerScore: winningSide === 'A' ? multA : multB
-      },
-      ...prev.slice(0, 9)
-    ]);
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col items-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+    <!-- Mobile Screen Wrapper (App Frame) -->
+    <div class="w-full max-w-md bg-slate-900/80 backdrop-blur-lg min-h-screen flex flex-col shadow-2xl relative border-x border-slate-800">
         
-        {/* 1. TAMPA HEADER LOGO SECTION */}
-        <div className="p-4 flex flex-col items-center border-b border-slate-100 bg-gradient-to-b from-slate-50 to-white">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-black tracking-wider text-teal-600">TAMPA</span>
-          </div>
-          <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">Connecting The Bay</p>
-        </div>
-
-        {/* 2. WALLET BALANCE & DEPOSIT/WITHDRAWAL ROW */}
-        <div className="p-4 bg-white mx-4 my-3 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-2 text-slate-500">
-              <WalletIcon className="w-4 h-4" />
-              <span className="text-xs font-semibold uppercase tracking-wider">Wallet Balance</span>
+        <!-- ========================================== -->
+        <!-- 1. AUTHENTICATION / REGISTRATION SCREEN  -->
+        <!-- ========================================== -->
+        <div id="auth-screen" class="flex-1 flex flex-col justify-center px-6 py-12">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">Namta</h1>
+                <p class="text-slate-400 text-sm mt-2">Discover Global Friendships Instantly</p>
             </div>
-            <button className="p-1 hover:bg-slate-100 rounded-full transition-colors">
-              <ArrowPathIcon className="w-4 h-4 text-slate-400" />
-            </button>
-          </div>
-          <div className="text-2xl font-bold text-slate-900 mb-4">${walletBalance.toFixed(2)}</div>
-          
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs tracking-wide transition-all shadow-sm shadow-teal-100">
-              <ArrowUpTrayIcon className="w-4 h-4" /> DEPOSIT
-            </button>
-            <button className="flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs tracking-wide transition-all shadow-sm shadow-rose-100">
-              <ArrowDownTrayIcon className="w-4 h-4" /> WITHDRAWAL
-            </button>
-          </div>
-        </div>
 
-        {/* 3. TIMER / ENGAGEMENT ZONE */}
-        <div className="px-4 py-2 flex flex-col items-center">
-          <button 
-            onClick={startNewRound} 
-            disabled={isTimerActive}
-            className={`w-full py-3 rounded-2xl font-bold text-sm tracking-wide transition-all border ${
-              isTimerActive 
-                ? 'bg-slate-50 border-slate-200 text-teal-600' 
-                : 'bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100'
-            }`}
-          >
-            {isTimerActive ? `ROUND ACTIVE: ${timeLeft}s REMAINING` : 'CLICK TO START 25s ROUND'}
-          </button>
-        </div>
-
-        {/* 4. MAIN TAP BOXES & BETTING INPUTS */}
-        <div className="p-4 grid grid-cols-2 gap-4">
-          
-          {/* Box A (Left) */}
-          <button 
-            onClick={() => isTimerActive && setSelectedBox('A')}
-            disabled={!isTimerActive}
-            className={`relative p-5 rounded-2xl border-2 flex flex-col items-center justify-center min-h-[140px] transition-all ${
-              selectedBox === 'A' 
-                ? 'border-teal-500 bg-teal-50/50' 
-                : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-            }`}
-          >
-            <span className="absolute top-2 left-3 text-[10px] font-black text-slate-400">BOX A</span>
-            {revealedMultA ? (
-              <span className="text-4xl font-extrabold text-teal-600 animate-bounce">{revealedMultA}</span>
-            ) : (
-              <span className="text-xs text-slate-400 font-medium">Tap to Pick Box A</span>
-            )}
-          </button>
-
-          {/* Box B (Right) */}
-          <button 
-            onClick={() => isTimerActive && setSelectedBox('B')}
-            disabled={!isTimerActive}
-            className={`relative p-5 rounded-2xl border-2 flex flex-col items-center justify-center min-h-[140px] transition-all ${
-              selectedBox === 'B' 
-                ? 'border-rose-500 bg-rose-50/50' 
-                : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-            }`}
-          >
-            <span className="absolute top-2 right-3 text-[10px] font-black text-slate-400">BOX B</span>
-            {revealedMultB ? (
-              <span className="text-4xl font-extrabold text-rose-600 animate-bounce">{revealedMultB}</span>
-            ) : (
-              <span className="text-xs text-slate-400 font-medium">Tap to Pick Box B</span>
-            )}
-          </button>
-        </div>
-
-        {/* Bet Configuration Utility Row */}
-        <div className="px-4 pb-4">
-          <div className="flex gap-2 items-center">
-            <input 
-              type="number" 
-              placeholder="Enter Bet Amount" 
-              value={betAmount}
-              onChange={(e) => setBetAmount(e.target.value)}
-              disabled={!isTimerActive || !selectedBox}
-              className="flex-1 bg-slate-50 border border-slate-200 text-sm font-semibold rounded-xl px-3 py-2.5 focus:outline-none focus:border-slate-400 transition-colors disabled:opacity-60"
-            />
-            <div className="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-2.5 rounded-xl border border-slate-200">
-              {selectedBox ? `Selected: Box ${selectedBox}` : 'Select Box First'}
+            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 shadow-xl">
+                <h2 class="text-xl font-semibold mb-6 text-white">Create Account</h2>
+                <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Email Address</label>
+                        <input type="email" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" placeholder="alex@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Password</label>
+                        <input type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Confirm Password</label>
+                        <input type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 mt-2">
+                        Get Started
+                    </button>
+                </form>
             </div>
-          </div>
         </div>
 
-        {/* 5. POPUP NOTIFICATION BANNER STATUS */}
-        {roundStatus !== 'betting' && roundStatus !== 'ended' && (
-          <div className={`mx-4 mb-4 p-3 rounded-xl flex items-center gap-3 animate-fade-in ${
-            roundStatus === 'won' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'
-          }`}>
-            <TrophyIcon className="w-5 h-5 flex-shrink-0" />
-            <div className="text-xs">
-              <span className="font-bold uppercase tracking-wider">{roundStatus === 'won' ? 'CONGRATULATIONS! ' : 'SO SAD! '}</span>
-              {roundStatus === 'won' ? 'You picked the highest multiplier score box!' : 'Your box score was lower this period.'}
-            </div>
-          </div>
-        )}
+        <!-- ========================================== -->
+        <!-- MAIN APP INTERFACE (HIDDEN BY DEFAULT)     -->
+        <!-- ========================================== -->
+        <div id="main-app" class="hidden flex-1 flex flex-col h-full">
+            
+            <!-- App Header -->
+            <header class="px-4 py-4 border-b border-slate-800 bg-slate-900/90 sticky top-0 z-50 flex justify-between items-center">
+                <span class="text-2xl font-black bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">Namta</span>
+                <div class="flex items-center space-x-3">
+                    <button class="text-slate-400 hover:text-white"><i class="fa-solid fa-bell text-lg"></i></button>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 p-[2px]">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jitendra" class="w-full h-full rounded-full bg-slate-900" alt="Avatar">
+                    </div>
+                </div>
+            </header>
 
-        {/* 6. LAST 10 RESULTS HISTORY LIST */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Last 10 Tap Box Results</h3>
-          <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50 text-slate-400 font-bold uppercase border-b border-slate-100 text-[10px] tracking-wider">
-                  <th className="p-2.5 text-center">Period No.</th>
-                  <th className="p-2.5 text-center">Box A Score</th>
-                  <th className="p-2.5 text-center">Box B Score</th>
-                  <th className="p-2.5 text-center">Highest Winner</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                {history.map((row, index) => (
-                  <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-2.5 text-center font-mono text-slate-500">{row.periodNo}</td>
-                    <td className={`p-2.5 text-center ${row.winningBox === 'A' ? 'text-teal-600 font-bold' : ''}`}>{row.multiplierA}</td>
-                    <td className={`p-2.5 text-center ${row.winningBox === 'B' ? 'text-rose-600 font-bold' : ''}`}>{row.multiplierB}</td>
-                    <td className="p-2.5 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                        row.winningBox === 'A' ? 'bg-teal-50 text-teal-700' : 'bg-rose-50 text-rose-700'
-                      }`}>
-                        Box {row.winningBox} ({row.winnerScore})
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            <!-- Main Scrollable Content -->
+            <main class="flex-1 overflow-y-auto pb-24 px-4 py-4">
+
+                <!-- TAB 1: FRIEND DASHBOARD -->
+                <div id="tab-friend" class="tab-content active space-y-6">
+                    <!-- Premium Search Card -->
+                    <div class="bg-gradient-to-br from-indigo-900/40 to-slate-800/40 p-5 rounded-2xl border border-indigo-500/20">
+                        <h3 class="text-lg font-bold text-white mb-3">Find Match by Topic</h3>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="match-name" placeholder="Name" class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                                <input type="number" id="match-age" placeholder="Age" class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <input type="text" id="match-topic" placeholder="Topic (e.g., Music, Gaming, Tech)" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                            <button onclick="sendMatchRequest()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-xl text-sm transition-colors">
+                                <i class="fa-solid fa-paper-plane mr-2"></i> Send Request
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Global Profiles Grid -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-400 mb-3 tracking-wider uppercase">Global Explorers</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <!-- Profile Card 1 -->
+                            <div class="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl text-center relative group">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Anna" class="w-16 h-16 mx-auto mb-2 rounded-full bg-slate-700" alt="User">
+                                <h5 class="font-bold text-white text-sm">Anna, 22</h5>
+                                <p class="text-xs text-indigo-400 font-medium mb-3">#Anime #Travel</p>
+                                <span class="absolute top-2 right-2 flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
+                            </div>
+                            <!-- Profile Card 2 -->
+                            <div class="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl text-center relative">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" class="w-16 h-16 mx-auto mb-2 rounded-full bg-slate-700" alt="User">
+                                <h5 class="font-bold text-white text-sm">John, 25</h5>
+                                <p class="text-xs text-indigo-400 font-medium mb-3">#Coding #Fitness</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: STATUS DASHBOARD -->
+                <div id="tab-status" class="tab-content space-y-6">
+                    <!-- Create Status Section -->
+                    <div class="flex items-center space-x-3 bg-slate-800/30 p-4 rounded-xl border border-slate-800">
+                        <div class="relative">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jitendra" class="w-12 h-12 rounded-full bg-slate-700" alt="Your Avatar">
+                            <span class="absolute bottom-0 right-0 bg-pink-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs border-2 border-slate-900 cursor-pointer"><i class="fa-solid fa-plus"></i></span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-white">Share your moment</p>
+                            <p class="text-xs text-slate-400">Upload 15s video or a photo</p>
+                        </div>
+                    </div>
+
+                    <!-- Status View Area -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Recent Statuses</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <!-- Dummy Video/Photo Status Item -->
+                            <div class="aspect-[9/16] bg-slate-800 rounded-xl overflow-hidden relative group cursor-pointer shadow-lg">
+                                <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Status">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                                <div class="absolute bottom-3 left-3 flex items-center space-x-2">
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Emma" class="w-6 h-6 rounded-full bg-slate-600" alt="">
+                                    <span class="text-xs font-medium text-white">Emma</span>
+                                </div>
+                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                                    <i class="fa-solid fa-circle-play text-3xl text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: ADD FRIEND (ACCEPTED CONNECTIONS & CHAT) -->
+                <div id="tab-addfriend" class="tab-content space-y-4">
+                    <h4 class="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Connected Friends (Chats)</h4>
+                    
+                    <!-- Chat Item 1 -->
+                    <div class="flex items-center justify-between p-3 bg-slate-800/40 rounded-xl border border-slate-700/30 hover:bg-slate-800/70 transition-colors cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas" class="w-12 h-12 rounded-full bg-slate-700" alt="">
+                            <div>
+                                <h5 class="text-sm font-bold text-white">Lucas (Brazil)</h5>
+                                <p class="text-xs text-slate-400 truncate max-w-[180px]">Hey bro! Let's play game.</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end space-y-2">
+                            <span class="text-[10px] text-indigo-400 font-medium">Active now</span>
+                            <div class="flex space-x-2 text-slate-400">
+                                <button class="hover:text-indigo-400"><i class="fa-solid fa-image text-sm"></i></button>
+                                <button class="hover:text-indigo-400"><i class="fa-solid fa-message text-sm"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: FUN (REQUEST MANAGEMENT) -->
+                <div id="tab-fun" class="tab-content space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Incoming Requests</h4>
+                        <span class="bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">1 New</span>
+                    </div>
+
+                    <!-- Incoming Request Card -->
+                    <div class="bg-gradient-to-r from-slate-800/90 to-indigo-950/40 p-4 rounded-xl border border-slate-700/60 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia" class="w-12 h-12 rounded-full bg-slate-700" alt="">
+                            <div>
+                                <h5 class="text-sm font-bold text-white">Sophia, 21</h5>
+                                <p class="text-xs text-indigo-300">Topic: Photography</p>
+                            </div>
+                        </div>
+                        <!-- Action Buttons -->
+                        <div class="flex space-x-2">
+                            <button onclick="alert('Accepted!')" class="bg-emerald-600 hover:bg-emerald-500 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-md">
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </button>
+                            <button onclick="this.parentElement.parentElement.remove()" class="bg-rose-600 hover:bg-rose-500 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-md">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- ========================================== -->
+            <!-- BOTTOM NAVIGATION BAR                      -->
+            <!-- ========================================== -->
+            <nav class="absolute bottom-0 left-0 right-0 bg-slate-900/95 border-t border-slate-800 backdrop-blur-md px-2 py-2 flex justify-around items-center z-50">
+                <button onclick="switchTab('friend', this)" class="nav-btn text-indigo-400 flex flex-col items-center py-2 px-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-user-group text-lg"></i>
+                    <span class="text-[10px] font-medium mt-1">Friend</span>
+                </button>
+                <button onclick="switchTab('status', this)" class="nav-btn text-slate-500 hover:text-slate-300 flex flex-col items-center py-2 px-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-circle-notch text-lg"></i>
+                    <span class="text-[10px] font-medium mt-1">Status</span>
+                </button>
+                <button onclick="switchTab('addfriend', this)" class="nav-btn text-slate-500 hover:text-slate-300 flex flex-col items-center py-2 px-3 rounded-xl transition-all">
+                    <i class="fa-solid fa-user-plus text-lg"></i>
+                    <span class="text-[10px] font-medium mt-1">Add Friend</span>
+                </button>
+                <button onclick="switchTab('fun', this)" class="nav-btn text-slate-500 hover:text-slate-300 flex flex-col items-center py-2 px-3 rounded-xl transition-all relative">
+                    <i class="fa-solid fa-bolt text-lg"></i>
+                    <span class="text-[10px] font-medium mt-1">Fun</span>
+                    <span class="absolute top-1 right-3 w-2 h-2 bg-pink-500 rounded-full"></span>
+                </button>
+            </nav>
+
         </div>
-
-      </div>
     </div>
-  );
-}
+
+    <!-- ========================================== -->
+    <!-- INTERACTIVE JAVASCRIPT LOGIC               -->
+    <!-- ========================================== -->
+    <script>
+        // Fake Authentication Handler
+        function handleRegister(e) {
+            e.preventDefault();
+            // Hide auth screen, show main app
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+        }
+
+        // Tab Switching Engine
+        function switchTab(tabId, element) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show targets tab
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            // Reset all navigation button styles
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('text-indigo-400');
+                btn.classList.add('text-slate-500');
+            });
+
+            // Highlight active button
+            element.classList.remove('text-slate-500');
+            element.classList.add('text-indigo-400');
+        }
+
+        // Demo interactive alert
+        function sendMatchRequest() {
+            const name = document.getElementById('match-name').value || "Someone";
+            const topic = document.getElementById('match-topic').value || "General";
+            alert(`Global request broadcasted for Topic: ${topic}!`);
+        }
+    </script>
+</body>
+</html>
