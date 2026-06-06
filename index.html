@@ -3,218 +3,738 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Namta - Connect Globally</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Namta - International Friendship</title>
+    <!-- Tailwind CSS (Premium Light/Indigo Theme) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Premium Icons -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK v9 Modules via CDN -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
+
+        // Your Exact Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCfwH6JKXKbCWrXsXm1yDr7GNIDqmawtHg",
+            authDomain: "namta-812b4.firebaseapp.com",
+            databaseURL: "https://namta-812b4-default-rtdb.firebaseio.com",
+            projectId: "namta-812b4",
+            storageBucket: "namta-812b4.firebasestorage.app",
+            messagingSenderId: "879977811304",
+            appId: "1:879977811304:web:0c70e28ddecf9d7528dadd"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+
+        // Global State variables
+        let currentUserData = null;
+        let activeChatUserId = null;
+
+        window.onload = () => {
+            initAppLogic();
+        };
+
+        function initAppLogic() {
+            // Monitor Auth State
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    onValue(ref(db, 'users/' + user.uid), (snapshot) => {
+                        currentUserData = snapshot.val();
+                        if (currentUserData) {
+                            showScreen('main-app');
+                            switchTab('friend');
+                            loadGlobalExplorers();
+                            loadIncomingRequests();
+                            loadConnectedFriends();
+                            loadStatuses();
+                            // Set Active State
+                            update(ref(db, 'users/' + user.uid), { active: true });
+                        }
+                    });
+                } else {
+                    showScreen('auth-screen');
+                    showAuthForm('login');
+                }
+            });
+
+            // Form Submit Bindings
+            document.getElementById('register-form').onsubmit = handleRegister;
+            document.getElementById('login-form').onsubmit = handleLogin;
+            document.getElementById('match-form').onsubmit = handleSendMatchRequest;
+            document.getElementById('chat-form').onsubmit = handleSendMessage;
+            document.getElementById('status-file-input').onchange = handleStatusUpload;
+            document.getElementById('profile-file-input').onchange = handleProfilePicUpload;
+        }
+
+        // ==========================================
+        // AUTHENTICATION LOGIC
+        // ==========================================
+        async function handleRegister(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm').value;
+            const gender = document.getElementById('reg-gender').value;
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            // Enforce automatic username@ format
+            const username = usernameInput.endsWith('@') ? usernameInput : usernameInput + '@';
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Save extended profile data into Realtime Database
+                await set(ref(db, 'users/' + user.uid), {
+                    uid: user.uid,
+                    username: username,
+                    email: email,
+                    gender: gender,
+                    avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=" + user.uid,
+                    active: true
+                });
+                alert("Registration successful!");
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        window.handleLogout = async function() {
+            if (auth.currentUser) {
+                await update(ref(db, 'users/' + auth.currentUser.uid), { active: false });
+                await signOut(auth);
+            }
+        }
+
+        // ==========================================
+        // TAB 1: FRIEND & MATCH ROUTING
+        // ==========================================
+        async function handleSendMatchRequest(e) {
+            e.preventDefault();
+            if (!auth.currentUser) return;
+
+            const name = document.getElementById('match-name').value.trim();
+            const topic = document.getElementById('match-topic').value.trim();
+            const targetGender = document.getElementById('match-gender').value;
+
+            const funRequestRef = ref(db, 'fun_requests');
+            const newRequestRef = push(funRequestRef);
+
+            await set(newRequestRef, {
+                requestId: newRequestRef.key,
+                senderUid: auth.currentUser.uid,
+                senderUsername: currentUserData.username,
+                senderAvatar: currentUserData.avatar,
+                senderGender: currentUserData.gender,
+                targetGender: targetGender,
+                name: name,
+                topic: topic,
+                timestamp: serverTimestamp()
+            });
+
+            alert("Request sent successfully to Fun Section!");
+            document.getElementById('match-form').reset();
+        }
+
+        function loadGlobalExplorers() {
+            onValue(ref(db, 'users'), (snapshot) => {
+                const container = document.getElementById('global-explorers-grid');
+                container.innerHTML = "";
+                const data = snapshot.val();
+                if (!data) return;
+
+                Object.values(data).forEach(user => {
+                    if (user.uid === auth.currentUser.uid) return; // Skip self
+
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center relative flex flex-col items-center";
+                    card.innerHTML = `
+                        <div class="relative w-16 h-16 mb-2">
+                            <img src="${user.avatar}" class="w-full h-full rounded-full border bg-slate-50 object-cover" />
+                            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.active ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
+                        </div>
+                        <h5 class="font-bold text-slate-800 text-sm">${user.username}</h5>
+                        <p class="text-xs text-slate-400 mb-3 capitalize">${user.gender}</p>
+                        <button onclick="directMessage('${user.uid}')" class="mt-auto bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold py-2 px-4 rounded-xl transition-colors w-full">
+                            <i class="fa-solid fa-paper-plane mr-1"></i> Message
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        window.directMessage = async function(targetUid) {
+            // Instantly create friend connection in db and open chat
+            await set(ref(db, `friends/${auth.currentUser.uid}/${targetUid}`), true);
+            await set(ref(db, `friends/${targetUid}/${auth.currentUser.uid}`), true);
+            switchTab('addfriend');
+            openChatBox(targetUid);
+        }
+
+        // ==========================================
+        // TAB 4: FUN SECTION (REQUEST MANAGEMENT)
+        // ==========================================
+        function loadIncomingRequests() {
+            onValue(ref(db, 'fun_requests'), (snapshot) => {
+                const container = document.getElementById('fun-requests-list');
+                container.innerHTML = "";
+                const data = snapshot.val();
+                if (!data) {
+                    container.innerHTML = `<p class="text-center text-slate-400 text-sm py-8">No requests available</p>`;
+                    return;
+                }
+
+                Object.values(data).forEach(req => {
+                    // Filter based on user's selected permission choice if applicable
+                    if (req.senderUid === auth.currentUser.uid) return;
+
+                    // Block check list filter can be handled here if implemented
+                    
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between";
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <img src="${req.senderAvatar}" class="w-12 h-12 rounded-full border bg-slate-50" />
+                            <div>
+                                <h5 class="text-sm font-bold text-slate-800">${req.name} (${req.senderUsername})</h5>
+                                <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-full capitalize mb-1">${req.senderGender}</span>
+                                <p class="text-xs text-indigo-600 font-medium">Topic: ${req.topic}</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="acceptRequest('${req.senderUid}', '${req.requestId}')" class="bg-emerald-500 hover:bg-emerald-600 text-white w-8 h-8 rounded-xl flex items-center justify-center transition-colors shadow-sm shadow-emerald-200">
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </button>
+                            <button onclick="deleteRequest('${req.requestId}')" class="bg-slate-100 hover:bg-slate-200 text-slate-500 w-8 h-8 rounded-xl flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        window.acceptRequest = async function(senderUid, requestId) {
+            // Establish mutual connection
+            await set(ref(db, `friends/${auth.currentUser.uid}/${senderUid}`), true);
+            await set(ref(db, `friends/${senderUid}/${auth.currentUser.uid}`), true);
+            // Clean up request from fun board
+            await remove(ref(db, `fun_requests/${requestId}`));
+            alert("Request Accepted! Checked inside Add Friend.");
+            switchTab('addfriend');
+        }
+
+        window.deleteRequest = async function(requestId) {
+            await remove(ref(db, `fun_requests/${requestId}`));
+        }
+
+        // ==========================================
+        // TAB 3: ADD FRIEND & LIVE CHAT (WITH DATA BLOCKS)
+        // ==========================================
+        function loadConnectedFriends() {
+            onValue(ref(db, `friends/${auth.currentUser.uid}`), (snapshot) => {
+                const container = document.getElementById('connected-friends-list');
+                container.innerHTML = "";
+                const val = snapshot.val();
+                if (!val) {
+                    container.innerHTML = `<p class="text-center text-slate-400 text-sm py-8">No friends added yet</p>`;
+                    return;
+                }
+
+                Object.keys(val).forEach(friendUid => {
+                    // Check if block state exists
+                    onValue(ref(db, `users/${friendUid}`), (userSnap) => {
+                        const user = userSnap.val();
+                        if (!user) return;
+
+                        const item = document.createElement('div');
+                        item.className = "flex items-center justify-between p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-100 transition-all cursor-pointer";
+                        item.onclick = () => openChatBox(friendUid);
+                        item.innerHTML = `
+                            <div class="flex items-center space-x-3">
+                                <div class="relative w-12 h-12">
+                                    <img src="${user.avatar}" class="w-full h-full rounded-full border bg-slate-50" />
+                                    <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${user.active ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-slate-800">${user.username}</h5>
+                                    <p class="text-[11px] text-slate-400">${user.active ? 'Active now' : 'Offline'}</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3 text-slate-400" onclick="event.stopPropagation();">
+                                <button onclick="blockUser('${friendUid}')" title="Block User" class="hover:text-rose-500 transition-colors p-1"><i class="fa-solid fa-ban text-xs"></i></button>
+                                <button onclick="removeFriend('${friendUid}')" title="Remove Friend" class="hover:text-slate-600 transition-colors p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                            </div>
+                        `;
+                        container.appendChild(item);
+                    });
+                });
+            });
+        }
+
+        function openChatBox(friendUid) {
+            activeChatUserId = friendUid;
+            document.getElementById('chat-window').classList.remove('hidden');
+            
+            onValue(ref(db, `users/${friendUid}`), (snap) => {
+                const user = snap.val();
+                document.getElementById('chat-header-title').innerText = user ? user.username : "Chat";
+            });
+
+            // Load structural chat string keys sequentially
+            const chatSessionId = auth.currentUser.uid < friendUid ? `${auth.currentUser.uid}_${friendUid}` : `${friendUid}_${auth.currentUser.uid}`;
+            
+            onValue(ref(db, `chats/${chatSessionId}`), (snapshot) => {
+                const msgContainer = document.getElementById('chat-messages-container');
+                msgContainer.innerHTML = "";
+                const data = snapshot.val();
+                if (!data) return;
+
+                Object.values(data).forEach(msg => {
+                    const isMe = msg.senderId === auth.currentUser.uid;
+                    const msgWrapper = document.createElement('div');
+                    msgWrapper.className = `flex ${isMe ? 'justify-end' : 'justify-start'} mb-3`;
+                    
+                    let contentBlock = `<p class="text-sm">${msg.text}</p>`;
+                    if (msg.type === 'image') {
+                        contentBlock = `<img src="${msg.imageUrl}" class="rounded-xl max-w-[200px] object-cover border shadow-sm" />`;
+                    }
+
+                    msgWrapper.innerHTML = `
+                        <div class="${isMe ? 'bg-indigo-600 text-white rounded-t-2xl rounded-bl-2xl' : 'bg-slate-100 text-slate-800 rounded-t-2xl rounded-br-2xl'} px-4 py-2.5 max-w-[75%] shadow-sm">
+                            ${contentBlock}
+                        </div>
+                    `;
+                    msgContainer.appendChild(msgWrapper);
+                });
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+            });
+        }
+
+        window.closeChat = function() {
+            document.getElementById('chat-window').classList.add('hidden');
+            activeChatUserId = null;
+        }
+
+        async function handleSendMessage(e) {
+            e.preventDefault();
+            if (!activeChatUserId || !auth.currentUser) return;
+
+            const input = document.getElementById('chat-input-field');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const chatSessionId = auth.currentUser.uid < activeChatUserId ? `${auth.currentUser.uid}_${activeChatUserId}` : `${activeChatUserId}_${auth.currentUser.uid}`;
+            const newMsgRef = push(ref(db, `chats/${chatSessionId}`));
+            
+            await set(newMsgRef, {
+                senderId: auth.currentUser.uid,
+                text: text,
+                type: 'text',
+                timestamp: serverTimestamp()
+            });
+
+            input.value = "";
+        }
+
+        window.triggerChatImageUpload = function() {
+            document.getElementById('chat-image-input').click();
+        }
+
+        window.handleChatImageUpload = async function(event) {
+            const file = event.target.files[0];
+            if (!file || !activeChatUserId) return;
+
+            const chatSessionId = auth.currentUser.uid < activeChatUserId ? `${auth.currentUser.uid}_${activeChatUserId}` : `${activeChatUserId}_${auth.currentUser.uid}`;
+            const fileRef = sRef(storage, `chats/${chatSessionId}/${Date.now()}_${file.name}`);
+            
+            try {
+                const snapshot = await uploadBytes(fileRef, file);
+                const url = await getDownloadURL(snapshot.ref);
+                const newMsgRef = push(ref(db, `chats/${chatSessionId}`));
+                
+                await set(newMsgRef, {
+                    senderId: auth.currentUser.uid,
+                    imageUrl: url,
+                    type: 'image',
+                    timestamp: serverTimestamp()
+                });
+            } catch (err) {
+                alert("Upload failed: " + err.message);
+            }
+        }
+
+        window.blockUser = async function(uid) {
+            if (confirm("Are you sure you want to block this user?")) {
+                await remove(ref(db, `friends/${auth.currentUser.uid}/${uid}`));
+                await remove(ref(db, `friends/${uid}/${auth.currentUser.uid}`));
+                closeChat();
+                alert("User Blocked successfully.");
+            }
+        }
+
+        window.removeFriend = async function(uid) {
+            if (confirm("Remove user from friends list?")) {
+                await remove(ref(db, `friends/${auth.currentUser.uid}/${uid}`));
+                await remove(ref(db, `friends/${uid}/${auth.currentUser.uid}`));
+                closeChat();
+            }
+        }
+
+        // ==========================================
+        // TAB 2: STATUS SYSTEM (25-HOUR AUTODELETE CLEANUP)
+        // ==========================================
+        window.triggerStatusSelect = function() {
+            document.getElementById('status-file-input').click();
+        }
+
+        async function handleStatusUpload(e) {
+            const file = e.target.files[0];
+            if (!file || !auth.currentUser) return;
+
+            const fileRef = sRef(storage, `statuses/${auth.currentUser.uid}/${Date.now()}_${file.name}`);
+            try {
+                alert("Uploading Status... Please wait");
+                const snapshot = await uploadBytes(fileRef, file);
+                const url = await getDownloadURL(snapshot.ref);
+
+                const newStatusRef = push(ref(db, 'statuses'));
+                await set(newStatusRef, {
+                    statusId: newStatusRef.key,
+                    uid: auth.currentUser.uid,
+                    username: currentUserData.username,
+                    avatar: currentUserData.avatar,
+                    mediaUrl: url,
+                    timestamp: serverTimestamp() // Tracks initialization timestamp explicitly
+                });
+                alert("Status uploaded successfully!");
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function loadStatuses() {
+            onValue(ref(db, 'statuses'), (snapshot) => {
+                const container = document.getElementById('statuses-grid-view');
+                container.innerHTML = "";
+                const data = snapshot.val();
+                if (!data) return;
+
+                const cutoffTime = Date.now() - (25 * 60 * 60 * 1000); // 25 hours logic check limit
+
+                Object.values(data).forEach(status => {
+                    // Self cleanup routine if structural time exceeded 25 hours
+                    if (status.timestamp && status.timestamp < cutoffTime) {
+                        remove(ref(db, `statuses/${status.statusId}`));
+                        return;
+                    }
+
+                    const element = document.createElement('div');
+                    element.className = "aspect-[9/16] bg-slate-100 rounded-2xl overflow-hidden relative group cursor-pointer border shadow-sm";
+                    element.onclick = () => openStatusViewer(status.mediaUrl);
+                    element.innerHTML = `
+                        <img src="${status.mediaUrl}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 flex items-center space-x-2">
+                            <img src="${status.avatar}" class="w-6 h-6 rounded-full border border-white bg-slate-200" />
+                            <span class="text-xs font-semibold text-white shadow-sm">${status.username}</span>
+                        </div>
+                    `;
+                    container.appendChild(element);
+                });
+            });
+        }
+
+        window.openStatusViewer = function(url) {
+            const modal = document.getElementById('status-modal-viewer');
+            document.getElementById('status-modal-media').src = url;
+            modal.classList.remove('hidden');
+        }
+
+        window.closeStatusViewer = function() {
+            document.getElementById('status-modal-viewer').add('hidden');
+        }
+
+        // ==========================================
+        // PROFILE PICTURE UPDATE UPLOAD
+        // ==========================================
+        window.triggerProfilePicSelect = function() {
+            document.getElementById('profile-file-input').click();
+        }
+
+        async function handleProfilePicUpload(e) {
+            const file = e.target.files[0];
+            if (!file || !auth.currentUser) return;
+
+            const fileRef = sRef(storage, `profiles/${auth.currentUser.uid}`);
+            try {
+                alert("Updating avatar picture...");
+                const snapshot = await uploadBytes(fileRef, file);
+                const url = await getDownloadURL(snapshot.ref);
+
+                await update(ref(db, `users/${auth.currentUser.uid}`), { avatar: url });
+                document.getElementById('user-header-avatar').src = url;
+                alert("Profile avatar updated successfully!");
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // ==========================================
+        // SYSTEM NAVIGATION HOOKS
+        // ==========================================
+        window.switchTab = function(tabId, element) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.replace('text-indigo-600', 'text-slate-400'));
+            
+            if (element) {
+                element.classList.replace('text-slate-400', 'text-indigo-600');
+            } else {
+                // Default fallback highlighting matching structural tab context
+                const targetBtn = document.querySelector(`[onclick*="switchTab('${tabId}'"]`);
+                if (targetBtn) targetBtn.classList.replace('text-slate-400', 'text-indigo-600');
+            }
+        }
+
+        window.showScreen = function(screenId) {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        window.showAuthForm = function(formType) {
+            if (formType === 'register') {
+                document.getElementById('register-form-container').classList.remove('hidden');
+                document.getElementById('login-form-container').classList.add('hidden');
+            } else {
+                document.getElementById('register-form-container').classList.add('hidden');
+                document.getElementById('login-form-container').classList.remove('hidden');
+            }
+        }
+
+    </script>
     <style>
-        /* Smooth transitions for tabs */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        body { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); }
+        body { background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen font-sans antialiased flex justify-center">
+<body class="text-slate-700 min-h-screen flex justify-center selection:bg-indigo-100">
 
-    <!-- Mobile Screen Wrapper (App Frame) -->
-    <div class="w-full max-w-md bg-slate-900/80 backdrop-blur-lg min-h-screen flex flex-col shadow-2xl relative border-x border-slate-800">
+    <!-- Primary App Frame (Mobile Viewport Engine Simulation Container) -->
+    <div class="w-full max-w-md bg-white min-h-screen flex flex-col shadow-xl relative border-x border-slate-100">
         
         <!-- ========================================== -->
-        <!-- 1. AUTHENTICATION / REGISTRATION SCREEN  -->
+        <!-- SCREEN 1: COMPREHENSIVE AUTH ENTRIES       -->
         <!-- ========================================== -->
-        <div id="auth-screen" class="flex-1 flex flex-col justify-center px-6 py-12">
+        <div id="auth-screen" class="hidden flex-1 flex flex-col justify-center px-6 py-12 bg-slate-50">
             <div class="text-center mb-8">
-                <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">Namta</h1>
-                <p class="text-slate-400 text-sm mt-2">Discover Global Friendships Instantly</p>
+                <h1 class="text-4xl font-black tracking-tight text-indigo-600">Namta</h1>
+                <p class="text-slate-500 text-xs mt-1.5 uppercase font-semibold tracking-wider">International Friendship Network</p>
             </div>
 
-            <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50 shadow-xl">
-                <h2 class="text-xl font-semibold mb-6 text-white">Create Account</h2>
-                <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4">
+            <!-- Registration Container -->
+            <div id="register-form-container" class="bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
+                <h2 class="text-xl font-bold text-slate-800 mb-5">Create Account</h2>
+                <form id="register-form" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Email Address</label>
-                        <input type="email" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" placeholder="alex@example.com">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Username (e.g., aayu)</label>
+                        <input type="text" id="reg-username" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="username">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Password</label>
-                        <input type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Email Address</label>
+                        <input type="email" id="reg-email" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="yourname@gmail.com">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Confirm Password</label>
-                        <input type="password" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Select Gender</label>
+                        <select id="reg-gender" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors">
+                            <option value="boy">Boy</option>
+                            <option value="girl">Girl</option>
+                        </select>
                     </div>
-                    <button type="submit" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 mt-2">
-                        Get Started
-                    </button>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
+                        <input type="password" id="reg-password" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Confirm Password</label>
+                        <input type="password" id="reg-confirm" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-2xl transition-all shadow-md shadow-indigo-100 mt-2">Sign Up</button>
                 </form>
+                <p class="text-xs text-center text-slate-500 mt-4">Already registered? <span onclick="showAuthForm('login')" class="text-indigo-600 font-bold cursor-pointer underline">Log In</span></p>
+            </div>
+
+            <!-- Login Container -->
+            <div id="login-form-container" class="hidden bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
+                <h2 class="text-xl font-bold text-slate-800 mb-5">Welcome Back</h2>
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Email Address</label>
+                        <input type="email" id="login-email" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="yourname@gmail.com">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Password</label>
+                        <input type="password" id="login-password" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-2xl transition-all shadow-md shadow-indigo-100 mt-2">Log In</button>
+                </form>
+                <p class="text-xs text-center text-slate-500 mt-4">New here? <span onclick="showAuthForm('register')" class="text-indigo-600 font-bold cursor-pointer underline">Create Account</span></p>
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- MAIN APP INTERFACE (HIDDEN BY DEFAULT)     -->
+        <!-- SCREEN 2: NATIVE SYSTEM CORE DASHBOARD     -->
         <!-- ========================================== -->
-        <div id="main-app" class="hidden flex-1 flex flex-col h-full">
+        <div id="main-app" class="hidden flex-1 flex flex-col h-full overflow-hidden">
             
-            <!-- App Header -->
-            <header class="px-4 py-4 border-b border-slate-800 bg-slate-900/90 sticky top-0 z-50 flex justify-between items-center">
-                <span class="text-2xl font-black bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">Namta</span>
+            <!-- Global Top Bar Layout Component Frame Header -->
+            <header class="px-4 py-4 border-b border-slate-100 bg-white sticky top-0 z-40 flex justify-between items-center shadow-sm">
+                <span class="text-2xl font-black tracking-tight text-indigo-600">Namta</span>
                 <div class="flex items-center space-x-3">
-                    <button class="text-slate-400 hover:text-white"><i class="fa-solid fa-bell text-lg"></i></button>
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 p-[2px]">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jitendra" class="w-full h-full rounded-full bg-slate-900" alt="Avatar">
+                    <button onclick="handleLogout()" title="Logout" class="text-slate-400 hover:text-rose-500 transition-colors p-1"><i class="fa-solid fa-arrow-right-from-bracket text-lg"></i></button>
+                    <input type="file" id="profile-file-input" accept="image/*" class="hidden">
+                    <div onclick="triggerProfilePicSelect()" class="w-9 h-9 rounded-full bg-slate-100 p-0.5 border cursor-pointer group relative">
+                        <img id="user-header-avatar" src="" class="w-full h-full rounded-full bg-slate-200 object-cover" alt="Profile">
+                        <div class="absolute inset-0 bg-black/40 rounded-full hidden group-hover:flex items-center justify-center"><i class="fa-solid fa-camera text-[10px] text-white"></i></div>
                     </div>
                 </div>
             </header>
 
-            <!-- Main Scrollable Content -->
+            <!-- Primary View Navigation Space Area Routing Contents -->
             <main class="flex-1 overflow-y-auto pb-24 px-4 py-4">
 
-                <!-- TAB 1: FRIEND DASHBOARD -->
-                <div id="tab-friend" class="tab-content active space-y-6">
-                    <!-- Premium Search Card -->
-                    <div class="bg-gradient-to-br from-indigo-900/40 to-slate-800/40 p-5 rounded-2xl border border-indigo-500/20">
-                        <h3 class="text-lg font-bold text-white mb-3">Find Match by Topic</h3>
-                        <div class="space-y-3">
-                            <div class="grid grid-cols-2 gap-2">
-                                <input type="text" id="match-name" placeholder="Name" class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
-                                <input type="number" id="match-age" placeholder="Age" class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
-                            </div>
-                            <input type="text" id="match-topic" placeholder="Topic (e.g., Music, Gaming, Tech)" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
-                            <button onclick="sendMatchRequest()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-xl text-sm transition-colors">
-                                <i class="fa-solid fa-paper-plane mr-2"></i> Send Request
-                            </button>
+                <!-- TAB 1: FRIENDS INTERACTION SUB-PANEL DASHBOARD -->
+                <div id="tab-friend" class="tab-content space-y-6">
+                    <form id="match-form" class="bg-indigo-50/50 p-5 rounded-3xl border border-indigo-100/50 shadow-sm space-y-3">
+                        <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-1.5"></i>Broadcast Match Parameters</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="match-name" required placeholder="Display Name" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                            <select id="match-gender" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                                <option value="any">Any Gender</option>
+                                <option value="boy">Boy Only</option>
+                                <option value="girl">Girl Only</option>
+                            </select>
                         </div>
-                    </div>
+                        <input type="text" id="match-topic" required placeholder="What do you want to talk about? (e.g., Gaming)" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-all shadow-sm">Send to Fun Section</button>
+                    </form>
 
-                    <!-- Global Profiles Grid -->
                     <div>
-                        <h4 class="text-sm font-semibold text-slate-400 mb-3 tracking-wider uppercase">Global Explorers</h4>
-                        <div class="grid grid-cols-2 gap-3">
-                            <!-- Profile Card 1 -->
-                            <div class="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl text-center relative group">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Anna" class="w-16 h-16 mx-auto mb-2 rounded-full bg-slate-700" alt="User">
-                                <h5 class="font-bold text-white text-sm">Anna, 22</h5>
-                                <p class="text-xs text-indigo-400 font-medium mb-3">#Anime #Travel</p>
-                                <span class="absolute top-2 right-2 flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
-                            </div>
-                            <!-- Profile Card 2 -->
-                            <div class="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl text-center relative">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" class="w-16 h-16 mx-auto mb-2 rounded-full bg-slate-700" alt="User">
-                                <h5 class="font-bold text-white text-sm">John, 25</h5>
-                                <p class="text-xs text-indigo-400 font-medium mb-3">#Coding #Fitness</p>
-                            </div>
+                        <h4 class="text-xs font-bold text-slate-400 mb-3 tracking-wider uppercase">Global Profiles Available</h4>
+                        <div id="global-explorers-grid" class="grid grid-cols-2 gap-3">
+                            <!-- Dynamic Content Rendered Here -->
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 2: STATUS DASHBOARD -->
-                <div id="tab-status" class="tab-content space-y-6">
-                    <!-- Create Status Section -->
-                    <div class="flex items-center space-x-3 bg-slate-800/30 p-4 rounded-xl border border-slate-800">
-                        <div class="relative">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jitendra" class="w-12 h-12 rounded-full bg-slate-700" alt="Your Avatar">
-                            <span class="absolute bottom-0 right-0 bg-pink-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs border-2 border-slate-900 cursor-pointer"><i class="fa-solid fa-plus"></i></span>
-                        </div>
+                <!-- TAB 2: EXPLICIT CHRONOLOGICAL MOMENT STATUS PANEL -->
+                <div id="tab-status" class="tab-content hidden space-y-5">
+                    <input type="file" id="status-file-input" accept="image/*,video/*" class="hidden">
+                    <div onclick="triggerStatusSelect()" class="flex items-center space-x-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-indigo-100 transition-all">
+                        <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 text-lg shadow-sm"><i class="fa-solid fa-plus"></i></div>
                         <div>
-                            <p class="text-sm font-semibold text-white">Share your moment</p>
-                            <p class="text-xs text-slate-400">Upload 15s video or a photo</p>
+                            <p class="text-sm font-bold text-slate-800">Add a New Status</p>
+                            <p class="text-xs text-slate-400">Disappears automatically after 25 hours</p>
                         </div>
                     </div>
 
-                    <!-- Status View Area -->
                     <div>
-                        <h4 class="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Recent Statuses</h4>
-                        <div class="grid grid-cols-2 gap-3">
-                            <!-- Dummy Video/Photo Status Item -->
-                            <div class="aspect-[9/16] bg-slate-800 rounded-xl overflow-hidden relative group cursor-pointer shadow-lg">
-                                <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Status">
-                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
-                                <div class="absolute bottom-3 left-3 flex items-center space-x-2">
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Emma" class="w-6 h-6 rounded-full bg-slate-600" alt="">
-                                    <span class="text-xs font-medium text-white">Emma</span>
-                                </div>
-                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                                    <i class="fa-solid fa-circle-play text-3xl text-white"></i>
-                                </div>
-                            </div>
+                        <h4 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Recent Live Stories</h4>
+                        <div id="statuses-grid-view" class="grid grid-cols-2 gap-3">
+                            <!-- Dynamic Status Media Output Blocks -->
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB 3: ADD FRIEND (ACCEPTED CONNECTIONS & CHAT) -->
-                <div id="tab-addfriend" class="tab-content space-y-4">
-                    <h4 class="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Connected Friends (Chats)</h4>
-                    
-                    <!-- Chat Item 1 -->
-                    <div class="flex items-center justify-between p-3 bg-slate-800/40 rounded-xl border border-slate-700/30 hover:bg-slate-800/70 transition-colors cursor-pointer">
-                        <div class="flex items-center space-x-3">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas" class="w-12 h-12 rounded-full bg-slate-700" alt="">
-                            <div>
-                                <h5 class="text-sm font-bold text-white">Lucas (Brazil)</h5>
-                                <p class="text-xs text-slate-400 truncate max-w-[180px]">Hey bro! Let's play game.</p>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-end space-y-2">
-                            <span class="text-[10px] text-indigo-400 font-medium">Active now</span>
-                            <div class="flex space-x-2 text-slate-400">
-                                <button class="hover:text-indigo-400"><i class="fa-solid fa-image text-sm"></i></button>
-                                <button class="hover:text-indigo-400"><i class="fa-solid fa-message text-sm"></i></button>
-                            </div>
-                        </div>
+                <!-- TAB 3: MUTUAL CHAT CHANNELS LIST CONNECTED -->
+                <div id="tab-addfriend" class="tab-content hidden space-y-3">
+                    <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Active Chat Channels</h4>
+                    <div id="connected-friends-list" class="space-y-2">
+                        <!-- Friend List Node Objects Rendered Dynamically -->
                     </div>
                 </div>
 
-                <!-- TAB 4: FUN (REQUEST MANAGEMENT) -->
-                <div id="tab-fun" class="tab-content space-y-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Incoming Requests</h4>
-                        <span class="bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">1 New</span>
-                    </div>
-
-                    <!-- Incoming Request Card -->
-                    <div class="bg-gradient-to-r from-slate-800/90 to-indigo-950/40 p-4 rounded-xl border border-slate-700/60 flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia" class="w-12 h-12 rounded-full bg-slate-700" alt="">
-                            <div>
-                                <h5 class="text-sm font-bold text-white">Sophia, 21</h5>
-                                <p class="text-xs text-indigo-300">Topic: Photography</p>
-                            </div>
-                        </div>
-                        <!-- Action Buttons -->
-                        <div class="flex space-x-2">
-                            <button onclick="alert('Accepted!')" class="bg-emerald-600 hover:bg-emerald-500 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-md">
-                                <i class="fa-solid fa-check text-xs"></i>
-                            </button>
-                            <button onclick="this.parentElement.parentElement.remove()" class="bg-rose-600 hover:bg-rose-500 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-md">
-                                <i class="fa-solid fa-xmark text-xs"></i>
-                            </button>
-                        </div>
+                <!-- TAB 4: FUN ROUTING INCOMING INTERFACES HUB -->
+                <div id="tab-fun" class="tab-content hidden space-y-3">
+                    <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Live Match Boards Requests</h4>
+                    <div id="fun-requests-list" class="space-y-2">
+                        <!-- Structural Node Request Arrays -->
                     </div>
                 </div>
 
             </main>
 
             <!-- ========================================== -->
-            <!-- BOTTOM NAVIGATION BAR                      -->
+            <!-- LIVE INTERACTIVE OVERLAY SUB-SYSTEM CHAT   -->
             <!-- ========================================== -->
-            <nav class="absolute bottom-0 left-0 right-0 bg-slate-900/95 border-t border-slate-800 backdrop-blur-md px-2 py-2 flex justify-around items-center z-50">
-                <button onclick="switchTab('friend', this)" class="nav-btn text-indigo-400 flex flex-col items-center py-2 px-3 rounded-xl transition-all">
+            <div id="chat-window" class="hidden absolute inset-0 bg-white z-50 flex flex-col">
+                <header class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <div class="flex items-center space-x-3">
+                        <button onclick="closeChat()" class="text-slate-500 hover:text-slate-800 p-1"><i class="fa-solid fa-chevron-left text-lg"></i></button>
+                        <h4 id="chat-header-title" class="font-bold text-slate-800 text-base">Username</h4>
+                    </div>
+                    <span class="text-xs font-medium text-emerald-500 bg-emerald-50 px-2 py-1 rounded-full">Real Player <i class="fa-solid fa-shield-checkmark ml-0.5"></i></span>
+                </header>
+                <!-- Messages Body -->
+                <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50"></div>
+                <!-- Chat Action Form Footer Controls -->
+                <form id="chat-form" class="p-3 border-t bg-white flex items-center space-x-2">
+                    <input type="file" id="chat-image-input" accept="image/*" class="hidden" onchange="handleChatImageUpload(event)">
+                    <button type="button" onclick="triggerChatImageUpload()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 w-10 h-10 rounded-xl flex items-center justify-center transition-colors"><i class="fa-solid fa-image text-sm"></i></button>
+                    <input type="text" id="chat-input-field" required placeholder="Type message..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-sm shadow-indigo-200"><i class="fa-solid fa-paper-plane text-sm"></i></button>
+                </form>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- STICKY STRUCTURAL TAB CONTAINER NAVIGATION -->
+            <!-- ========================================== -->
+            <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-lg px-2 py-2 flex justify-around items-center z-40">
+                <button onclick="switchTab('friend', this)" class="nav-btn text-indigo-600 flex flex-col items-center py-2 px-4 rounded-xl transition-all">
                     <i class="fa-solid fa-user-group text-lg"></i>
-                    <span class="text-[10px] font-medium mt-1">Friend</span>
+                    <span class="text-[10px] font-bold mt-1">Friend</span>
                 </button>
-                <button onclick="switchTab('status', this)" class="nav-btn text-slate-500 hover:text-slate-300 flex flex-col items-center py-2 px-3 rounded-xl transition-all">
+                <button onclick="switchTab('status', this)" class="nav-btn text-slate-400 flex flex-col items-center py-2 px-4 rounded-xl transition-all">
                     <i class="fa-solid fa-circle-notch text-lg"></i>
-                    <span class="text-[10px] font-medium mt-1">Status</span>
+                    <span class="text-[10px] font-bold mt-1">Status</span>
                 </button>
-                <button onclick="switchTab('addfriend', this)" class="nav-btn text-slate-500 hover:text-slate-300 flex flex-col items-center py-2 px-3 rounded-xl transition-all">
-                    <i class="fa-solid fa-user-plus text-lg"></i>
-                    <span class="text-[10px] font-medium mt-1">Add Friend</span>
+                <button onclick="switchTab('addfriend', this)" class="nav-btn text-slate-400 flex flex-col items-center py-2 px-4 rounded-xl transition-all">
+                    <i class="fa-solid fa-message text-lg"></i>
+                    <span class="text-[10px] font-bold mt-1">Add Friend</span>
                 </button>
-                <button onclick="switchTab('fun', this)" class="nav-btn text-slate-500 hover:text-slate-300 flex flex-col items-center py-2 px-3 rounded-xl transition-all relative">
+                <button onclick="switchTab('fun', this)" class="nav-btn text-slate-400 flex flex-col items-center py-2 px-4 rounded-xl transition-all relative">
                     <i class="fa-solid fa-bolt text-lg"></i>
-                    <span class="text-[10px] font-medium mt-1">Fun</span>
-                    <span class="absolute top-1 right-3 w-2 h-2 bg-pink-500 rounded-full"></span>
+                    <span class="text-[10px] font-bold mt-1">Fun</span>
                 </button>
             </nav>
 
@@ -222,44 +742,12 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- INTERACTIVE JAVASCRIPT LOGIC               -->
+    <!-- OVERLAY: STATUS FULL-SCREEN DISPLAY MODAL  -->
     <!-- ========================================== -->
-    <script>
-        // Fake Authentication Handler
-        function handleRegister(e) {
-            e.preventDefault();
-            // Hide auth screen, show main app
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-        }
+    <div id="status-modal-viewer" class="hidden fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center p-4" onclick="this.classList.add('hidden')">
+        <button class="absolute top-4 right-4 text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
+        <img id="status-modal-media" src="" class="max-w-full max-h-[85vh] rounded-2xl object-contain shadow-2xl">
+    </div>
 
-        // Tab Switching Engine
-        function switchTab(tabId, element) {
-            // Hide all tabs
-            const tabs = document.querySelectorAll('.tab-content');
-            tabs.forEach(tab => tab.classList.remove('active'));
-
-            // Show targets tab
-            document.getElementById('tab-' + tabId).classList.add('active');
-
-            // Reset all navigation button styles
-            const buttons = document.querySelectorAll('.nav-btn');
-            buttons.forEach(btn => {
-                btn.classList.remove('text-indigo-400');
-                btn.classList.add('text-slate-500');
-            });
-
-            // Highlight active button
-            element.classList.remove('text-slate-500');
-            element.classList.add('text-indigo-400');
-        }
-
-        // Demo interactive alert
-        function sendMatchRequest() {
-            const name = document.getElementById('match-name').value || "Someone";
-            const topic = document.getElementById('match-topic').value || "General";
-            alert(`Global request broadcasted for Topic: ${topic}!`);
-        }
-    </script>
 </body>
 </html>
