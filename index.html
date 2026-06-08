@@ -41,18 +41,16 @@
         };
 
         function initNamtaCore() {
-            // Live Auth Observer
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     onValue(ref(db, 'users/' + user.uid), (snapshot) => {
                         currentUserData = snapshot.val();
                         if (currentUserData) {
-                            // Sync Header Component Data
                             document.getElementById('user-header-avatar').src = currentUserData.avatar;
                             document.getElementById('user-header-id').innerText = currentUserData.uniqueId;
                             
                             showScreen('main-app');
-                            switchTab('friend'); // Default opening tab
+                            switchTab('friend'); 
                             loadGlobalExplorers();
                             loadFunBroadcasts();
                             loadConnectedChats();
@@ -67,7 +65,6 @@
                 }
             });
 
-            // Handlers Binding
             document.getElementById('register-form').onsubmit = handleRegister;
             document.getElementById('login-form').onsubmit = handleLogin;
             document.getElementById('match-form').onsubmit = handleFunBroadcastRequest;
@@ -76,9 +73,6 @@
             document.getElementById('profile-file-input').onchange = handleProfilePhotoUpload;
         }
 
-        // ==========================================
-        // AUTH ENGINE + 6-DIGIT UNIQUE ID GENERATOR
-        // ==========================================
         function generateUniqueId() {
             return 'NM' + Math.floor(1000 + Math.random() * 9000); 
         }
@@ -104,7 +98,7 @@
                 });
                 
                 await set(ref(db, 'id_mapping/' + uniqueId), user.uid);
-                alert(`Account Verified! Your Unique ID is: ${uniqueId}`);
+                alert(`Account Verified! ID: ${uniqueId}`);
             } catch (error) {
                 alert(error.message);
             }
@@ -128,9 +122,6 @@
             }
         }
 
-        // ==========================================
-        // INSTANT PHOTO & STATUS VALIDATION STORAGE
-        // ==========================================
         window.openProfilePicSelector = () => document.getElementById('profile-file-input').click();
 
         async function handleProfilePhotoUpload(e) {
@@ -146,21 +137,28 @@
 
                 await update(ref(db, `users/${auth.currentUser.uid}`), { avatar: downloadUrl });
                 document.getElementById('user-header-avatar').src = downloadUrl;
-                alert("Profile Photo Uploaded Successfully!");
+                alert("Profile Photo Updated!");
             } catch (err) {
-                alert("Upload Fault: " + err.message);
+                alert("Upload Error: " + err.message + "\nCheck if Firebase Storage rules are public.");
             } finally {
                 document.getElementById('profile-avatar-loader').classList.add('hidden');
             }
         }
 
+        // ==========================================
+        // LIVE STATUS FIXED UPLOAD ENGINE
+        // ==========================================
         window.openStatusSelector = () => document.getElementById('status-file-input').click();
 
         async function handleLiveStatusUpload(e) {
             const file = e.target.files[0];
-            if (!file || !auth.currentUser) return;
+            if (!file || !auth.currentUser || !currentUserData) {
+                alert("Upload failed: User not fully loaded.");
+                return;
+            }
 
             alert("Uploading Live Status... Please Wait.");
+            // Unique file path based on current timestamp
             const fileRef = sRef(storage, `statuses/${auth.currentUser.uid}/${Date.now()}_status.jpg`);
 
             try {
@@ -168,6 +166,7 @@
                 const downloadUrl = await getDownloadURL(snapshot.ref);
                 const newStatusRef = push(ref(db, 'statuses'));
 
+                // Saving into Database
                 await set(newStatusRef, {
                     statusId: newStatusRef.key,
                     uid: auth.currentUser.uid,
@@ -176,9 +175,10 @@
                     mediaUrl: downloadUrl,
                     timestamp: Date.now()
                 });
-                alert("Status Confirmed & Live for 25 Hours!");
+                alert("Status is now live for 25 Hours!");
+                switchTab('status'); // Auto route to check status
             } catch (err) {
-                alert("Status Upload Failed: " + err.message);
+                alert("Status Upload Failed! Reason: " + err.message + "\n\nTip: Make sure Storage rules are set to public in Firebase Console.");
             }
         }
 
@@ -187,11 +187,15 @@
                 const container = document.getElementById('statuses-grid-view');
                 container.innerHTML = "";
                 const data = snapshot.val();
-                if (!data) return;
+                if (!data) {
+                    container.innerHTML = `<p class="text-center text-slate-400 text-xs py-10 col-span-2">No live statuses right now.</p>`;
+                    return;
+                }
 
                 const limit25h = Date.now() - (25 * 60 * 60 * 1000);
 
                 Object.values(data).forEach(status => {
+                    // Auto-delete if expired
                     if (status.timestamp < limit25h) {
                         remove(ref(db, `statuses/${status.statusId}`));
                         return;
@@ -216,9 +220,6 @@
             });
         }
 
-        // ==========================================
-        // FIXED: FUN SECTION INSTANT ROUTING + TTL TIMERS
-        // ==========================================
         async function handleFunBroadcastRequest(e) {
             e.preventDefault();
             if (!auth.currentUser) return;
@@ -230,7 +231,6 @@
             const targetExpiry = Date.now() + (durationHrs * 60 * 60 * 1000);
             const funRef = push(ref(db, 'fun_requests'));
 
-            // Database mein request push karein
             await set(funRef, {
                 requestId: funRef.key,
                 senderUid: auth.currentUser.uid,
@@ -242,8 +242,6 @@
             });
 
             document.getElementById('match-form').reset();
-            
-            // INSTANT FIX: Data push hote hi user ko 'Fun Tab' par redirect karein
             switchTab('fun'); 
         }
 
@@ -302,9 +300,6 @@
             });
         }
 
-        // ==========================================
-        // ADD FRIEND INFLUX & SECURE CHAT LOGIC
-        // ==========================================
         window.initiateConversation = async function(targetUid) {
             await set(ref(db, `friends/${auth.currentUser.uid}/${targetUid}`), true);
             await set(ref(db, `friends/${targetUid}/${auth.currentUser.uid}`), true);
@@ -400,13 +395,9 @@
             });
         }
 
-        // ==========================================
-        // IN-CHAT LIVE TRANSLATION ENGINE
-        // ==========================================
         window.translateNode = async function(btnElement) {
             const textNode = btnElement.parentElement.querySelector('.text-msg-body');
             const originalText = textNode.innerText;
-            
             btnElement.innerText = "Translating...";
             
             try {
@@ -426,9 +417,6 @@
             activeChatFriendId = null;
         }
 
-        // ==========================================
-        // UI TABS AND DISCOVERY CONFIGURATION
-        // ==========================================
         function loadGlobalExplorers() {
             onValue(ref(db, 'users'), (snapshot) => {
                 const grid = document.getElementById('global-explorers-grid');
